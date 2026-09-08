@@ -1,5 +1,6 @@
 package patron;
 
+import common.*;
 import admin.ManageGUI;
 import javax.swing.*;
 import java.rmi.RemoteException;

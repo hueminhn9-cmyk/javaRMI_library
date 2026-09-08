@@ -1,9 +1,13 @@
+package server;
+
+import common.*;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.sql.SQLException;
+
 
 public class RMIServer {
     public static void main(String[] args) {

@@ -1,3 +1,7 @@
+package server;
+
+import common.*;
+
 import javax.swing.table.DefaultTableModel;
 import java.net.InetAddress;
 import java.net.UnknownHostException;

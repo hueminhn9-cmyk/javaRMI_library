@@ -1,5 +1,6 @@
 package patron;
 
+import common.*;
 import javax.swing.*;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
@@ -50,6 +51,9 @@ public class ClientController {
     // Login - Register
     public Response loginClient(Patron patron) throws RemoteException {
         return libraryRemote.loginClient(patron);
+    }
+    public Response registerClient(Patron patron) throws RemoteException {
+        return libraryRemote.createPatron(patron, false);
     }
     public Response getNotificationByPatronId(int patron_id) throws RemoteException {
         return libraryRemote.getNotification(patron_id);

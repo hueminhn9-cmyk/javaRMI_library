@@ -1,3 +1,5 @@
+package common;
+
 import java.io.Serializable;
 
 public class Patron implements Serializable {
@@ -8,6 +10,7 @@ public class Patron implements Serializable {
     private String email;
     private String password;
     private String role = "PATRON";
+    private boolean status = true;
 
     public Patron(Object[] data) {
         this.id = (int) data[0];

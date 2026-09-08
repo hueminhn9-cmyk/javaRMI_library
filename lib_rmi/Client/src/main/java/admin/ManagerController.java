@@ -1,5 +1,6 @@
 package admin;
 
+import common.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.net.MalformedURLException;

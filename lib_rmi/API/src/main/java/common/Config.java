@@ -1,3 +1,5 @@
+package common;
+
 public class Config {
 
     public static String IP_SERVER = "localhost";

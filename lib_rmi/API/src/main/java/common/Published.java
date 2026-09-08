@@ -1,19 +1,21 @@
+package common;
+
 import java.io.Serializable;
 
-public class Author implements Serializable {
+public class Published implements Serializable {
     private static final long serialVersionUID = 8271963769266110398L;
     private int id;
     private String name;
 
-    public Author() {
+    public Published() {
     }
 
-    public Author(Object[] data) {
+    public Published(Object[] data) {
         this.id = (int) data[0];
         this.name = (String) data[1];
     }
 
-    public Author(int id, String name) {
+    public Published(int id, String name) {
         this.id = id;
         this.name = name;
     }

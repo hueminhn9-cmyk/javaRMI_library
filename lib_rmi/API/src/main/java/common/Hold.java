@@ -1,16 +1,25 @@
+package common;
+
 import java.io.Serializable;
 import java.sql.Timestamp;
 
-public class Checkout implements Serializable {
+public class Hold implements Serializable {
     private static final long serialVersionUID = 8271963769266110398L;
     private int id;
     private Timestamp start_time;
     private Timestamp end_time;
-    private boolean is_returned = false;
     private int patron_id;
     private int book_copy_id;
 
-    public Checkout() {
+    public Hold() {
+    }
+
+    public Hold(int id, Timestamp start_time, Timestamp end_time, int patron_id, int book_copy_id) {
+        this.id = id;
+        this.start_time = start_time;
+        this.end_time = end_time;
+        this.patron_id = patron_id;
+        this.book_copy_id = book_copy_id;
     }
 
     public int getId() {
@@ -51,13 +60,5 @@ public class Checkout implements Serializable {
 
     public void setBook_copy_id(int book_copy_id) {
         this.book_copy_id = book_copy_id;
-    }
-
-    public boolean isIs_returned() {
-        return is_returned;
-    }
-
-    public void setIs_returned(boolean is_returned) {
-        this.is_returned = is_returned;
     }
 }

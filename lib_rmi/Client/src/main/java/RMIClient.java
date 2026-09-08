@@ -1,3 +1,5 @@
+package common;
+
 import patron.LoginGUI;
 import javax.swing.*;
 
