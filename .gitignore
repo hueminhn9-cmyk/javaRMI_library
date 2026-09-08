@@ -16,3 +16,6 @@ target/
 
 # Logs
 *.log
+
+# Ignore reference folder
+library_manager_rmi/
