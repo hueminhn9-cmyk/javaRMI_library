@@ -1,5 +1,3 @@
-package common;
-
 import patron.LoginGUI;
 import javax.swing.*;
 
@@ -14,6 +12,4 @@ public class RMIClient {
         new LoginGUI().setVisible(true);
 
     }
-
-
 }
