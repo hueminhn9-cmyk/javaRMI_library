@@ -1,0 +1,18 @@
+# Eclipse metadata & temporary files
+.metadata/
+.settings/
+.project
+.classpath
+*.location
+
+# Maven target build output
+**/target/
+target/
+
+# IDE / Editor files
+.idea/
+*.iml
+*.DS_Store
+
+# Logs
+*.log
