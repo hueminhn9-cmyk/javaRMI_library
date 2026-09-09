@@ -269,7 +269,7 @@ public class ClientGUI extends javax.swing.JFrame {
 
         getContentPane().add(panel_banner, java.awt.BorderLayout.NORTH);
 
-        panel_main.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
+        panel_main.setTabPlacement(javax.swing.JTabbedPane.TOP);
 
         panel_home.setLayout(new java.awt.BorderLayout());
 
