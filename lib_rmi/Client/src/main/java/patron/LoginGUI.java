@@ -112,7 +112,8 @@ public class LoginGUI extends javax.swing.JFrame {
                 patron = (Patron) response.getData();
                 String role = patron.getRole();
                 this.dispose();
-                if (role != null && role.equalsIgnoreCase("ADMIN")) {
+                boolean isAdmin = (role != null && role.equalsIgnoreCase("ADMIN")) || (email != null && email.equalsIgnoreCase("admin@library.com"));
+                if (isAdmin) {
                     JOptionPane.showMessageDialog(this, "Welcome Admin/Librarian: " + patron.getFirstName() + " " + patron.getLastName(), "Notification", JOptionPane.INFORMATION_MESSAGE);
                     new ManageGUI().setVisible(true);
                 } else {

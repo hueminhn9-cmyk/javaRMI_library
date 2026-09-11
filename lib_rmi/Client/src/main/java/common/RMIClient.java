@@ -1,5 +1,6 @@
 package common;
 
+import admin.ManageGUI;
 import patron.LoginGUI;
 import javax.swing.*;
 
@@ -11,6 +12,5 @@ public class RMIClient {
             e.printStackTrace();
         }
         new LoginGUI().setVisible(true);
-
     }
 }

@@ -839,12 +839,45 @@ public class LibraryImpl extends UnicastRemoteObject implements LibraryRemote {
 
     @Override
     public Response updateBookCopy(BookCopy bookCopy, boolean isCallFromSever) throws RemoteException {
-        return null;
+        try {
+            checkConnection();
+            String query = "UPDATE book_copy SET year_published = ?, book_id = ?, published_id = ? WHERE id = ?";
+            pst = conn.prepareStatement(query);
+            pst.setInt(1, bookCopy.getYear_published());
+            pst.setInt(2, bookCopy.getBook_id());
+            pst.setInt(3, bookCopy.getPublished_id());
+            pst.setInt(4, bookCopy.getId());
+            int rowsUpdated = pst.executeUpdate();
+
+            if (rowsUpdated > 0) {
+                doCallbacks(NOTIFY.UPDATE_BOOK_COPY);
+                return new Response(200, "Updated book copy successfully!");
+            } else {
+                return new Response(100, "Book copy ID " + bookCopy.getId() + " not found.");
+            }
+        } catch (SQLException e) {
+            return new Response(100, e.getMessage());
+        }
     }
 
     @Override
     public Response deleteBookCopy(int id, boolean isCallFromSever) throws RemoteException {
-        return null;
+        try {
+            checkConnection();
+            String query = "DELETE FROM book_copy WHERE id = ?";
+            pst = conn.prepareStatement(query);
+            pst.setInt(1, id);
+            int rowsDeleted = pst.executeUpdate();
+
+            if (rowsDeleted > 0) {
+                doCallbacks(NOTIFY.UPDATE_BOOK_COPY);
+                return new Response(200, "Deleted book copy successfully!");
+            } else {
+                return new Response(100, "Book copy ID " + id + " not found.");
+            }
+        } catch (SQLException e) {
+            return new Response(100, e.getMessage());
+        }
     }
 
     // ========================================================

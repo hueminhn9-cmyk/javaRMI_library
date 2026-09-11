@@ -79,4 +79,8 @@ public class ClientController {
         Response response = libraryRemote.deleteCheckout(checkout_id,false);
         return response;
     }
+
+    public Response updatePatronAccount(Patron patron) throws RemoteException {
+        return libraryRemote.updatePatron(patron, false);
+    }
 }

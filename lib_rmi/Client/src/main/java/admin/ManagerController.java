@@ -121,12 +121,30 @@ public class ManagerController {
         return libraryRemote.getPublished();
     }
 
+    public Response createPublishedController(Published published) throws RemoteException {
+        return libraryRemote.createPublished(published, false);
+    }
+
+    public Response updatePublishedController(Published published) throws RemoteException {
+        return libraryRemote.updatePublished(published, false);
+    }
+
+    public Response deletePublishedController(int publishedId) throws RemoteException {
+        return libraryRemote.deletePublished(publishedId, false);
+    }
+
     // CRUD - Book Copy
     public Response getBooksCopyController() throws RemoteException {
         return libraryRemote.getBooksCopy();
     }
     public Response createBookCopyController(BookCopy bookCopy) throws RemoteException {
         return libraryRemote.createBookCopy(bookCopy,false);
+    }
+    public Response updateBookCopyController(BookCopy bookCopy) throws RemoteException {
+        return libraryRemote.updateBookCopy(bookCopy, false);
+    }
+    public Response deleteBookCopyController(int bookCopyId) throws RemoteException {
+        return libraryRemote.deleteBookCopy(bookCopyId, false);
     }
 
     // CRUD - Hold
