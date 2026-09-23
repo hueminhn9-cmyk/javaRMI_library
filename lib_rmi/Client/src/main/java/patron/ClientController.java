@@ -14,7 +14,6 @@ public class ClientController {
     ClientInterface callbackObj;
     public ClientController() {
         try {
-            System.setProperty("java.rmi.server.hostname", Config.IP_SERVER);
             libraryRemote = (LibraryRemote) Naming.lookup("rmi://" + Config.IP_SERVER + ":" + Config.PORT_SERVER + "/api");
 
             // register for callback
@@ -31,7 +30,6 @@ public class ClientController {
     }
     public ClientController(ClientInterface client) {
         try {
-            System.setProperty("java.rmi.server.hostname", Config.IP_SERVER);
             libraryRemote = (LibraryRemote) Naming.lookup("rmi://" + Config.IP_SERVER + ":" + Config.PORT_SERVER + "/api");
 
             // register for callback

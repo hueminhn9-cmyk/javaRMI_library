@@ -22,7 +22,6 @@ public class ManagerController {
 
     public ManagerController() {
         try {
-            System.setProperty("java.rmi.server.hostname", Config.IP_SERVER);
             libraryRemote = (LibraryRemote) Naming.lookup("rmi://" + Config.IP_SERVER + ":" + Config.PORT_SERVER + "/api");
 
             // register for callback
@@ -40,7 +39,6 @@ public class ManagerController {
 
     public ManagerController(ClientInterface client) {
         try {
-            System.setProperty("java.rmi.server.hostname", Config.IP_SERVER);
             libraryRemote = (LibraryRemote) Naming.lookup("rmi://" + Config.IP_SERVER + ":" + Config.PORT_SERVER + "/api");
 
             // register for callback
