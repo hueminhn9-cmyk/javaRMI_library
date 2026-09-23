@@ -140,8 +140,11 @@ public class SearchPagePanel extends JPanel {
     public void showBookForSearch() {
         try {
             Response response = controller.getBookForSearchController();
-            if (response != null && response.getStatus() == 100) {
-                JOptionPane.showMessageDialog(this, response.getData());
+            if (response != null && response.getStatus() == 100 && response.getData() != null && response.getData() instanceof String) {
+                String msg = response.getData().toString().trim();
+                if (!msg.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, msg, "Thông báo", JOptionPane.WARNING_MESSAGE);
+                }
             }
 
             if (response != null && response.getData() instanceof DefaultTableModel) {

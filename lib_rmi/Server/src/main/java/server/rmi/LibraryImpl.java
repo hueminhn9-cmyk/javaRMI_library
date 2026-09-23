@@ -118,11 +118,11 @@ public class LibraryImpl extends UnicastRemoteObject implements LibraryRemote {
     }
 
     @Override
-    public Response getBooksForSearch() throws RemoteException {
+    public synchronized Response getBooksForSearch() throws RemoteException {
         try {
             checkConnection();
-            vTitle.clear();
-            vData.clear();
+            Vector localTitle = new Vector();
+            Vector localData = new Vector();
 
             String query = "SELECT book_copy.id, book.title, category.name AS 'category', " +
                     "author.name AS 'author', published.name AS 'published', book_copy.year_published " +
@@ -135,61 +135,65 @@ public class LibraryImpl extends UnicastRemoteObject implements LibraryRemote {
                     "WHERE book_copy.id NOT IN (SELECT book_copy_id FROM checkout WHERE is_returned = 0) " +
                     "ORDER BY book_copy.id DESC";
 
-            rst = stm.executeQuery(query);
+            PreparedStatement localPst = conn.prepareStatement(query);
+            ResultSet localRst = localPst.executeQuery();
 
             String[] title = new String[]{"ID", "Book Title", "Category", "Author", "Published", "Year"};
-            Collections.addAll(vTitle, title);
-            while (rst.next()) {
+            Collections.addAll(localTitle, title);
+            while (localRst.next()) {
                 Vector row = new Vector();
-                row.add(rst.getInt("id"));
-                row.add(rst.getString("title"));
-                row.add(rst.getString("category"));
-                row.add(rst.getString("author"));
-                row.add(rst.getString("published"));
-                row.add(rst.getString("year_published"));
-                vData.add(row);
+                row.add(localRst.getInt("id"));
+                row.add(localRst.getString("title"));
+                row.add(localRst.getString("category"));
+                row.add(localRst.getString("author"));
+                row.add(localRst.getString("published"));
+                row.add(localRst.getString("year_published"));
+                localData.add(row);
             }
-            rst.close();
-            return new Response(200, new DefaultTableModel(vData, vTitle));
+            localRst.close();
+            localPst.close();
+            return new Response(200, new DefaultTableModel(localData, localTitle));
         } catch (SQLException e) {
             System.err.println("Error in getBooksForSearch: " + e);
-            return new Response(100, null);
+            return new Response(100, "Lỗi kết nối CSDL: " + e.getMessage());
         }
     }
 
     @Override
-    public Response getCheckoutsClient(int patron_id) throws RemoteException {
+    public synchronized Response getCheckoutsClient(int patron_id) throws RemoteException {
         try {
             checkConnection();
-            vTitle.clear();
-            vData.clear();
+            Vector localTitle = new Vector();
+            Vector localData = new Vector();
 
             String query = "SELECT c.id, b.title AS book_title, c.start_time AS borrowed_date, " +
                     "c.end_time AS returned_date, c.is_returned AS borrow_status " +
                     "FROM checkout c " +
                     "INNER JOIN book_copy bc ON c.book_copy_id = bc.id " +
                     "INNER JOIN book b ON bc.book_id = b.id " +
-                    "WHERE c.patron_id = ?";
-            pst = conn.prepareStatement(query);
-            pst.setInt(1, patron_id);
-            rst = pst.executeQuery();
+                    "WHERE c.patron_id = ? " +
+                    "ORDER BY c.id DESC";
+            PreparedStatement localPst = conn.prepareStatement(query);
+            localPst.setInt(1, patron_id);
+            ResultSet localRst = localPst.executeQuery();
 
             String[] title = new String[]{"ID", "Book Title", "Borrowed Date", "Returned Date", "Status"};
-            Collections.addAll(vTitle, title);
-            while (rst.next()) {
+            Collections.addAll(localTitle, title);
+            while (localRst.next()) {
                 Vector row = new Vector();
-                row.add(rst.getInt("id"));
-                row.add(rst.getString("book_title"));
-                row.add(rst.getString("borrowed_date"));
-                row.add(rst.getString("returned_date"));
-                row.add(rst.getBoolean("borrow_status") ? "Returned" : "Borrowing");
-                vData.add(row);
+                row.add(localRst.getInt("id"));
+                row.add(localRst.getString("book_title"));
+                row.add(localRst.getString("borrowed_date"));
+                row.add(localRst.getString("returned_date"));
+                row.add(localRst.getBoolean("borrow_status") ? "Returned" : "Borrowing");
+                localData.add(row);
             }
-            rst.close();
-            return new Response(200, new DefaultTableModel(vData, vTitle));
+            localRst.close();
+            localPst.close();
+            return new Response(200, new DefaultTableModel(localData, localTitle));
         } catch (SQLException e) {
             System.err.println("Error in getCheckoutsClient: " + e);
-            return new Response(100, null);
+            return new Response(100, "Lỗi kết nối CSDL: " + e.getMessage());
         }
     }
 
