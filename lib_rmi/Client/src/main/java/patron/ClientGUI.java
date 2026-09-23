@@ -31,15 +31,17 @@ public class ClientGUI extends JFrame {
 
         @Override
         public void notify(NOTIFY notify) throws RemoteException {
-            if (notify == NOTIFY.CLIENT_UPDATE_NOTIFICATION && homePagePanel != null) {
-                homePagePanel.showNotification();
-            }
-            if (notify == NOTIFY.CLIENT_UPDATE_CHECKOUT && returnPagePanel != null) {
-                returnPagePanel.showCheckouts();
-            }
-            if ((notify == NOTIFY.UPDATE_BOOK || notify == NOTIFY.UPDATE_BOOK_COPY) && searchPagePanel != null) {
-                searchPagePanel.showBookForSearch();
-            }
+            SwingUtilities.invokeLater(() -> {
+                if (notify == NOTIFY.CLIENT_UPDATE_NOTIFICATION && homePagePanel != null) {
+                    homePagePanel.showNotification();
+                }
+                if ((notify == NOTIFY.CLIENT_UPDATE_CHECKOUT || notify == NOTIFY.UPDATE_CHECKOUT) && returnPagePanel != null) {
+                    returnPagePanel.showCheckouts();
+                }
+                if ((notify == NOTIFY.UPDATE_BOOK || notify == NOTIFY.UPDATE_BOOK_COPY || notify == NOTIFY.CLIENT_UPDATE_CHECKOUT || notify == NOTIFY.UPDATE_CHECKOUT) && searchPagePanel != null) {
+                    searchPagePanel.showBookForSearch();
+                }
+            });
         }
     }
 
@@ -73,41 +75,53 @@ public class ClientGUI extends JFrame {
     private void initComponents() {
         setLayout(new BorderLayout());
 
-        // Top Banner Panel
-        JPanel bannerPanel = new JPanel(new BorderLayout());
-        JLabel bannerLabel = new JLabel();
-        try {
-            bannerLabel.setIcon(new ImageIcon(getClass().getResource("/images/client_banner.png")));
-        } catch (Exception e) {
-            bannerLabel.setText("VKU LIBRARY SYSTEM");
-            bannerLabel.setFont(new Font("Montserrat", Font.BOLD, 24));
-        }
-        bannerPanel.add(bannerLabel, BorderLayout.CENTER);
-
-        // Header Action Bar (Title + Logout Button)
+        // Header Navigation Bar (No Image Banner, Sleek Modern Dark Slate Bar)
         JPanel headerBar = new JPanel(new BorderLayout());
-        headerBar.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+        headerBar.setBackground(UIStyleHelper.COLOR_NAVBAR_BG);
+        headerBar.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20));
 
-        JLabel appTitle = new JLabel("VKU Library");
-        appTitle.setFont(new Font("Montserrat ExtraBold", Font.BOLD, 20));
-        try {
-            appTitle.setIcon(new ImageIcon(getClass().getResource("/images/reading_1.png")));
-        } catch (Exception ignored) {}
-        headerBar.add(appTitle, BorderLayout.WEST);
+        // Brand Title Container (Left)
+        JPanel brandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        brandPanel.setOpaque(false);
 
-        JButton btnLogout = new JButton("Logout");
-        btnLogout.setFont(new Font("Montserrat", Font.PLAIN, 14));
-        try {
-            btnLogout.setIcon(new ImageIcon(getClass().getResource("/images/exit.png")));
-        } catch (Exception ignored) {}
+        JLabel appTitle = new JLabel("THƯ VIỆN VKU");
+        appTitle.setFont(UIStyleHelper.FONT_HEADER);
+        appTitle.setForeground(Color.WHITE);
+        brandPanel.add(appTitle);
+
+        JLabel portalBadge = new JLabel("CỔNG ĐỘC GIẢ");
+        portalBadge.setFont(new Font("Segoe UI", Font.BOLD, 10));
+        portalBadge.setForeground(new Color(148, 163, 184)); // #94A3B8
+        portalBadge.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(51, 65, 85), 1, true),
+                BorderFactory.createEmptyBorder(2, 6, 2, 6)
+        ));
+        brandPanel.add(portalBadge);
+
+        headerBar.add(brandPanel, BorderLayout.WEST);
+
+        // Right Actions (User Email + Logout Button)
+        JPanel rightActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
+        rightActions.setOpaque(false);
+
+        String userEmail = patron != null && patron.getEmail() != null ? patron.getEmail() : "Độc giả";
+        JLabel userLabel = new JLabel("Độc giả: " + userEmail);
+        userLabel.setFont(UIStyleHelper.FONT_BODY_BOLD);
+        userLabel.setForeground(new Color(226, 232, 240));
+        ImageIcon userIcon = UIStyleHelper.getIcon("/images/user (1).png", 18, 18);
+        if (userIcon != null) userLabel.setIcon(userIcon);
+        rightActions.add(userLabel);
+
+        JButton btnLogout = new JButton("Đăng xuất");
+        ImageIcon logoutIcon = UIStyleHelper.getIcon("/images/exit.png", 16, 16);
+        if (logoutIcon != null) btnLogout.setIcon(logoutIcon);
+        UIStyleHelper.styleButton(btnLogout, UIStyleHelper.COLOR_DANGER_BG, UIStyleHelper.COLOR_DANGER_BORDER, Color.BLACK);
         btnLogout.addActionListener(e -> btn_LogoutActionPerformed());
-        headerBar.add(btnLogout, BorderLayout.EAST);
+        rightActions.add(btnLogout);
 
-        JPanel topContainer = new JPanel(new BorderLayout());
-        topContainer.add(bannerPanel, BorderLayout.NORTH);
-        topContainer.add(headerBar, BorderLayout.SOUTH);
+        headerBar.add(rightActions, BorderLayout.EAST);
 
-        add(topContainer, BorderLayout.NORTH);
+        add(headerBar, BorderLayout.NORTH);
 
         // Initialize Tabbed Panels
         homePagePanel = new HomePagePanel(patron, controller);
@@ -117,21 +131,15 @@ public class ClientGUI extends JFrame {
         ChatPanel chatPanel = new ChatPanel(patron != null ? patron.getEmail() : "Patron");
 
         panel_main = new JTabbedPane();
+        panel_main.setFont(UIStyleHelper.FONT_BODY_BOLD);
+        panel_main.setBackground(UIStyleHelper.COLOR_BG_LIGHT);
         panel_main.setTabPlacement(JTabbedPane.TOP);
 
-        try {
-            panel_main.addTab("Home", new ImageIcon(getClass().getResource("/images/notification.png")), homePagePanel);
-            panel_main.addTab("Search", new ImageIcon(getClass().getResource("/images/paper-plane.png")), searchPagePanel);
-            panel_main.addTab("Return", new ImageIcon(getClass().getResource("/images/reading_24.png")), returnPagePanel);
-            panel_main.addTab("Profile", new ImageIcon(getClass().getResource("/images/setting.png")), profilePagePanel);
-            panel_main.addTab("Chat & Truyền File TCP", new ImageIcon(getClass().getResource("/images/paper-plane.png")), chatPanel);
-        } catch (Exception e) {
-            panel_main.addTab("Home", homePagePanel);
-            panel_main.addTab("Search", searchPagePanel);
-            panel_main.addTab("Return", returnPagePanel);
-            panel_main.addTab("Profile", profilePagePanel);
-            panel_main.addTab("Chat & Truyền File TCP", chatPanel);
-        }
+        panel_main.addTab("Thông báo", UIStyleHelper.getIcon("/images/notification.png", 18, 18), homePagePanel);
+        panel_main.addTab("Tra cứu & Mượn sách", UIStyleHelper.getIcon("/images/search.png", 18, 18), searchPagePanel);
+        panel_main.addTab("Trả sách", UIStyleHelper.getIcon("/images/reading_24.png", 18, 18), returnPagePanel);
+        panel_main.addTab("Hồ sơ cá nhân", UIStyleHelper.getIcon("/images/setting.png", 18, 18), profilePagePanel);
+        panel_main.addTab("Trò chuyện & Truyền file", UIStyleHelper.getIcon("/images/chat.png", 18, 18), chatPanel);
 
         add(panel_main, BorderLayout.CENTER);
     }

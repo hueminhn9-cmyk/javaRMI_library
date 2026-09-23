@@ -131,7 +131,9 @@ public class LibraryImpl extends UnicastRemoteObject implements LibraryRemote {
                     "LEFT JOIN author ON book_author.author_id = author.id " +
                     "LEFT JOIN category ON book.category_id = category.id " +
                     "INNER JOIN book_copy ON book.id = book_copy.book_id " +
-                    "INNER JOIN published ON book_copy.published_id = published.id";
+                    "INNER JOIN published ON book_copy.published_id = published.id " +
+                    "WHERE book_copy.id NOT IN (SELECT book_copy_id FROM checkout WHERE is_returned = 0) " +
+                    "ORDER BY book_copy.id DESC";
 
             rst = stm.executeQuery(query);
 
@@ -276,21 +278,25 @@ public class LibraryImpl extends UnicastRemoteObject implements LibraryRemote {
             vTitle.clear();
             vData.clear();
 
-            String query = "SELECT bc.id, b.title, bc.year_published, p.name " +
+            String query = "SELECT bc.id, b.title, bc.year_published, p.name AS publisher, " +
+                    "CASE WHEN EXISTS (SELECT 1 FROM checkout c WHERE c.book_copy_id = bc.id AND c.is_returned = 0) " +
+                    "THEN 'Đang mượn' ELSE 'Khả dụng' END AS status " +
                     "FROM book_copy bc " +
                     "INNER JOIN book b ON bc.book_id = b.id " +
-                    "INNER JOIN published p ON bc.published_id = p.id";
+                    "INNER JOIN published p ON bc.published_id = p.id " +
+                    "ORDER BY bc.id DESC";
 
             rst = stm.executeQuery(query);
 
-            String[] title = new String[]{"Book Copy ID", "Book Title", "Year Public", "Published Name"};
+            String[] title = new String[]{"Book Copy ID", "Book Title", "Year Public", "Published Name", "Status"};
             Collections.addAll(vTitle, title);
             while (rst.next()) {
                 Vector row = new Vector();
                 row.add(rst.getInt("id"));
                 row.add(rst.getString("title"));
                 row.add(rst.getInt("year_published"));
-                row.add(rst.getString("name"));
+                row.add(rst.getString("publisher"));
+                row.add(rst.getString("status"));
                 vData.add(row);
             }
             rst.close();
@@ -1019,9 +1025,24 @@ public class LibraryImpl extends UnicastRemoteObject implements LibraryRemote {
     // ========================================================
 
     @Override
-    public Response createCheckout(Checkout checkout, boolean isCallFromSever) throws RemoteException {
+    public synchronized Response createCheckout(Checkout checkout, boolean isCallFromSever) throws RemoteException {
         try {
             checkConnection();
+
+            // 1. Double check if book copy is already currently borrowed (is_returned = 0)
+            String checkQuery = "SELECT id FROM checkout WHERE book_copy_id = ? AND is_returned = 0";
+            PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
+            checkStmt.setInt(1, checkout.getBook_copy_id());
+            ResultSet checkRs = checkStmt.executeQuery();
+            if (checkRs.next()) {
+                checkRs.close();
+                checkStmt.close();
+                return new Response(100, "Bản sao sách này hiện đang được độc giả khác mượn!");
+            }
+            checkRs.close();
+            checkStmt.close();
+
+            // 2. Perform insert
             String query = "INSERT INTO checkout (start_time, end_time, is_returned, patron_id, book_copy_id) VALUES (?, ?, ?, ?, ?)";
             pst = conn.prepareStatement(query);
             pst.setTimestamp(1, checkout.getStart_time());
@@ -1031,10 +1052,13 @@ public class LibraryImpl extends UnicastRemoteObject implements LibraryRemote {
             pst.setInt(5, checkout.getBook_copy_id());
             pst.executeUpdate();
 
+            // 3. Broadcast real-time RMI callbacks to all Clients & Admin
             doCallbacks(NOTIFY.CLIENT_UPDATE_CHECKOUT);
             doCallbacks(NOTIFY.UPDATE_CHECKOUT);
+            doCallbacks(NOTIFY.UPDATE_BOOK_COPY);
+            doCallbacks(NOTIFY.UPDATE_BOOK);
 
-            return new Response(200, "Created checkout successfully");
+            return new Response(200, "Tạo phiếu mượn sách thành công!");
         } catch (SQLException e) {
             return new Response(100, e.getMessage());
         }
@@ -1046,7 +1070,7 @@ public class LibraryImpl extends UnicastRemoteObject implements LibraryRemote {
     }
 
     @Override
-    public Response updateCheckout(Checkout checkout, boolean isCallFromSever) throws RemoteException {
+    public synchronized Response updateCheckout(Checkout checkout, boolean isCallFromSever) throws RemoteException {
         try {
             checkConnection();
             String query = "UPDATE checkout SET start_time = ?, end_time = ?, is_returned = ?, patron_id = ?, book_copy_id = ? WHERE id = ?";
@@ -1063,7 +1087,7 @@ public class LibraryImpl extends UnicastRemoteObject implements LibraryRemote {
                 if (checkout.isIs_returned()) {
                     Notification notification = new Notification();
                     Timestamp time_now = new Timestamp(new Date().getTime());
-                    notification.setMessage("ID " + checkout.getId() + ": Thủ thư đã duyệt yêu cầu mượn sách của bạn!");
+                    notification.setMessage("ID " + checkout.getId() + ": Thủ thư đã duyệt/hoàn tất mượn sách!");
                     notification.setPatron_id(checkout.getPatron_id());
                     notification.setSend_at(time_now);
 
@@ -1076,11 +1100,15 @@ public class LibraryImpl extends UnicastRemoteObject implements LibraryRemote {
 
                     doCallbacks(NOTIFY.UPDATE_NOTIFICATION);
                     doCallbacks(NOTIFY.CLIENT_UPDATE_NOTIFICATION);
-                    doCallbacks(NOTIFY.CLIENT_UPDATE_CHECKOUT);
                 }
-                return new Response(200, "Updated checkout successfully.");
+                doCallbacks(NOTIFY.CLIENT_UPDATE_CHECKOUT);
+                doCallbacks(NOTIFY.UPDATE_CHECKOUT);
+                doCallbacks(NOTIFY.UPDATE_BOOK_COPY);
+                doCallbacks(NOTIFY.UPDATE_BOOK);
+
+                return new Response(200, "Cập nhật phiếu mượn thành công.");
             } else {
-                return new Response(100, "No checkout found with ID " + checkout.getId());
+                return new Response(100, "Không tìm thấy phiếu mượn ID " + checkout.getId());
             }
         } catch (SQLException e) {
             return new Response(100, e.getMessage());
@@ -1088,7 +1116,7 @@ public class LibraryImpl extends UnicastRemoteObject implements LibraryRemote {
     }
 
     @Override
-    public Response deleteCheckout(int id, boolean isCallFromSever) throws RemoteException {
+    public synchronized Response deleteCheckout(int id, boolean isCallFromSever) throws RemoteException {
         try {
             checkConnection();
             String query = "DELETE FROM checkout WHERE id = ?";
@@ -1099,9 +1127,11 @@ public class LibraryImpl extends UnicastRemoteObject implements LibraryRemote {
             if (rowsDeleted > 0) {
                 doCallbacks(NOTIFY.CLIENT_UPDATE_CHECKOUT);
                 doCallbacks(NOTIFY.UPDATE_CHECKOUT);
-                return new Response(200, "Deleted checkout successfully.");
+                doCallbacks(NOTIFY.UPDATE_BOOK_COPY);
+                doCallbacks(NOTIFY.UPDATE_BOOK);
+                return new Response(200, "Trả sách thành công.");
             } else {
-                return new Response(100, "No checkout found with ID " + id);
+                return new Response(100, "Không tìm thấy phiếu mượn ID " + id);
             }
         } catch (SQLException e) {
             return new Response(100, e.getMessage());

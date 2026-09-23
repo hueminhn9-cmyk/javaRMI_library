@@ -23,8 +23,11 @@ public class ManageGUI extends JFrame {
                     bookManagePanel.showTableBook();
                     if (bookCopyManagePanel != null) bookCopyManagePanel.showDataComboBoxBooks();
                 }
-                if (notify == NOTIFY.UPDATE_BOOK_COPY && bookCopyManagePanel != null) {
+                if ((notify == NOTIFY.UPDATE_BOOK_COPY || notify == NOTIFY.UPDATE_CHECKOUT || notify == NOTIFY.CLIENT_UPDATE_CHECKOUT) && bookCopyManagePanel != null) {
                     bookCopyManagePanel.showTableBookCopy();
+                }
+                if ((notify == NOTIFY.UPDATE_CHECKOUT || notify == NOTIFY.CLIENT_UPDATE_CHECKOUT) && checkoutManagePanel != null) {
+                    checkoutManagePanel.showTableCheckout();
                 }
                 if (notify == NOTIFY.UPDATE_AUTHOR && authorManagePanel != null) {
                     authorManagePanel.showTableAuthor();

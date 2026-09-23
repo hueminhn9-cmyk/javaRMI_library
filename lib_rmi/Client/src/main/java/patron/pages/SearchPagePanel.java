@@ -5,6 +5,7 @@ import common.rmi.Config;
 import common.model.Response;
 import patron.ClientController;
 import common.model.Patron;
+import patron.UIStyleHelper;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -44,15 +45,25 @@ public class SearchPagePanel extends JPanel {
 
     private void initComponents() {
         setLayout(new BorderLayout());
+        setBackground(UIStyleHelper.COLOR_BG_LIGHT);
+        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // Left Panel: Search Field & Book List Table
-        JPanel leftPanel = new JPanel(new BorderLayout(5, 5));
-        leftPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        // Left Panel: Search & Table Card
+        JPanel leftCard = UIStyleHelper.createCardPanel("Danh Sách Sách Trong Thư Viện");
 
-        JPanel searchBarPanel = new JPanel(new BorderLayout(5, 5));
-        JLabel lblSearch = new JLabel(" Search: ");
-        lblSearch.setFont(new Font("Montserrat", Font.BOLD, 14));
+        JPanel searchBarPanel = new JPanel(new BorderLayout(8, 0));
+        searchBarPanel.setOpaque(false);
+        searchBarPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 12, 0));
+
+        JLabel lblSearch = new JLabel("Tìm kiếm:");
+        ImageIcon searchIcon = UIStyleHelper.getIcon("/images/search.png", 16, 16);
+        if (searchIcon != null) lblSearch.setIcon(searchIcon);
+        lblSearch.setFont(UIStyleHelper.FONT_BODY_BOLD);
+        lblSearch.setForeground(UIStyleHelper.COLOR_TEXT_MAIN);
+
         tf_Search_Book = new JTextField();
+        UIStyleHelper.styleTextField(tf_Search_Book);
+
         searchBarPanel.add(lblSearch, BorderLayout.WEST);
         searchBarPanel.add(tf_Search_Book, BorderLayout.CENTER);
 
@@ -64,54 +75,66 @@ public class SearchPagePanel extends JPanel {
             }
         });
         sp_Book = new JScrollPane(tbl_Book);
+        UIStyleHelper.styleTable(tbl_Book, sp_Book);
 
-        leftPanel.add(searchBarPanel, BorderLayout.NORTH);
-        leftPanel.add(sp_Book, BorderLayout.CENTER);
-        leftPanel.setPreferredSize(new Dimension(550, 0));
+        leftCard.add(searchBarPanel, BorderLayout.NORTH);
+        leftCard.add(sp_Book, BorderLayout.CENTER);
 
-        // Right Panel: Book Detail & Borrow Button
-        JPanel rightPanel = new JPanel(new BorderLayout());
-        rightPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        // Right Panel: Book Detail Card
+        JPanel rightCard = UIStyleHelper.createCardPanel("Chi Tiết Sách");
+        rightCard.setPreferredSize(new Dimension(380, 0));
 
-        JLabel titleDetail = new JLabel("Book Detail", SwingConstants.CENTER);
-        titleDetail.setFont(new Font("Montserrat ExtraBold", Font.BOLD, 22));
-        rightPanel.add(titleDetail, BorderLayout.NORTH);
+        JPanel detailContainer = new JPanel();
+        detailContainer.setLayout(new BoxLayout(detailContainer, BoxLayout.Y_AXIS));
+        detailContainer.setOpaque(false);
+        detailContainer.setBorder(BorderFactory.createEmptyBorder(10, 5, 10, 5));
 
-        JPanel infoGrid = new JPanel(new GridLayout(6, 2, 10, 20));
-        infoGrid.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        detailContainer.add(createDetailRow("Tên sách:", lb_Search_BookName = new JLabel("-")));
+        detailContainer.add(Box.createVerticalStrut(15));
+        detailContainer.add(createDetailRow("Tác giả:", lb_Search_Author = new JLabel("-")));
+        detailContainer.add(Box.createVerticalStrut(15));
+        detailContainer.add(createDetailRow("Thể loại:", lb_Search_Category = new JLabel("-")));
+        detailContainer.add(Box.createVerticalStrut(15));
+        detailContainer.add(createDetailRow("Nhà xuất bản:", lb_Search_Published = new JLabel("-")));
+        detailContainer.add(Box.createVerticalStrut(15));
+        detailContainer.add(createDetailRow("Năm xuất bản:", lb_Search_Year = new JLabel("-")));
+        detailContainer.add(Box.createVerticalStrut(25));
 
-        infoGrid.add(new JLabel("Book Name:"));
-        lb_Search_BookName = new JLabel("-");
-        infoGrid.add(lb_Search_BookName);
-
-        infoGrid.add(new JLabel("Publisher:"));
-        lb_Search_Published = new JLabel("-");
-        infoGrid.add(lb_Search_Published);
-
-        infoGrid.add(new JLabel("Year Published:"));
-        lb_Search_Year = new JLabel("-");
-        infoGrid.add(lb_Search_Year);
-
-        infoGrid.add(new JLabel("Category:"));
-        lb_Search_Category = new JLabel("-");
-        infoGrid.add(lb_Search_Category);
-
-        infoGrid.add(new JLabel("Author:"));
-        lb_Search_Author = new JLabel("-");
-        infoGrid.add(lb_Search_Author);
-
-        btn_Borrow = new JButton("Borrow this book !");
-        btn_Borrow.setFont(new Font("Montserrat", Font.BOLD, 13));
-        btn_Borrow.setBackground(new Color(52, 152, 219));
-        btn_Borrow.setForeground(Color.WHITE);
+        btn_Borrow = new JButton("Mượn sách");
+        ImageIcon borrowIcon = UIStyleHelper.getIcon("/images/checked.png", 16, 16);
+        if (borrowIcon != null) btn_Borrow.setIcon(borrowIcon);
+        UIStyleHelper.styleButton(btn_Borrow, UIStyleHelper.COLOR_PRIMARY_BG, UIStyleHelper.COLOR_PRIMARY_BORDER, Color.BLACK);
+        btn_Borrow.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btn_Borrow.setMaximumSize(new Dimension(220, 40));
         btn_Borrow.addActionListener(e -> btn_BorrowActionPerformed(e));
-        infoGrid.add(btn_Borrow);
+        detailContainer.add(btn_Borrow);
 
-        rightPanel.add(infoGrid, BorderLayout.CENTER);
+        rightCard.add(detailContainer, BorderLayout.NORTH);
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
-        splitPane.setResizeWeight(0.6);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftCard, rightCard);
+        splitPane.setResizeWeight(0.65);
+        splitPane.setDividerSize(8);
+        splitPane.setBorder(null);
+        splitPane.setBackground(UIStyleHelper.COLOR_BG_LIGHT);
+
         add(splitPane, BorderLayout.CENTER);
+    }
+
+    private JPanel createDetailRow(String labelText, JLabel valueLabel) {
+        JPanel row = new JPanel(new BorderLayout(10, 0));
+        row.setOpaque(false);
+        
+        JLabel lbl = new JLabel(labelText);
+        lbl.setFont(UIStyleHelper.FONT_BODY_BOLD);
+        lbl.setForeground(UIStyleHelper.COLOR_TEXT_MUTED);
+        lbl.setPreferredSize(new Dimension(100, 24));
+
+        valueLabel.setFont(UIStyleHelper.FONT_BODY_BOLD);
+        valueLabel.setForeground(UIStyleHelper.COLOR_TEXT_MAIN);
+
+        row.add(lbl, BorderLayout.WEST);
+        row.add(valueLabel, BorderLayout.CENTER);
+        return row;
     }
 
     public void showBookForSearch() {
@@ -144,9 +167,8 @@ public class SearchPagePanel extends JPanel {
                 });
 
                 tbl_Book.setModel(model);
-                tbl_Book.setRowHeight(40);
                 tbl_Book.setDefaultEditor(Object.class, null);
-                sp_Book.setViewportView(tbl_Book);
+                UIStyleHelper.styleTable(tbl_Book, sp_Book);
             }
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -158,7 +180,7 @@ public class SearchPagePanel extends JPanel {
         if (selectedRow != -1) {
             int modelRow = tbl_Book.convertRowIndexToModel(selectedRow);
             DefaultTableModel model = (DefaultTableModel) tbl_Book.getModel();
-            
+
             String title = String.valueOf(model.getValueAt(modelRow, 1));
             String category = String.valueOf(model.getValueAt(modelRow, 2));
             String author = String.valueOf(model.getValueAt(modelRow, 3));
@@ -202,8 +224,7 @@ public class SearchPagePanel extends JPanel {
                 ex.printStackTrace();
             }
         } else {
-            JOptionPane.showMessageDialog(this, "Please select a book from the list first!");
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn một cuốn sách trong danh sách trước!");
         }
     }
 }
-

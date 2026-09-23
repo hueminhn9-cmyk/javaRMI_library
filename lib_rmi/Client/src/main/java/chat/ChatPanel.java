@@ -162,20 +162,29 @@ public class ChatPanel extends JPanel implements TCPChatClient.ChatListener {
 
         btnSend = new JButton("Gửi");
         btnSend.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnSend.setUI(new javax.swing.plaf.basic.BasicButtonUI());
         btnSend.setBackground(new Color(224, 242, 254));
         btnSend.setForeground(Color.BLACK);
+        ImageIcon paperPlaneIcon = patron.UIStyleHelper.getIcon("/images/paper-plane.png", 16, 16);
+        if (paperPlaneIcon != null) btnSend.setIcon(paperPlaneIcon);
         btnSend.addActionListener(e -> sendMessage());
         btnPanel.add(btnSend);
 
-        btnSendImage = new JButton("📷 Gửi Ảnh");
+        btnSendImage = new JButton("Gửi ảnh");
         btnSendImage.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnSendImage.setUI(new javax.swing.plaf.basic.BasicButtonUI());
+        btnSendImage.setBackground(Color.WHITE);
         btnSendImage.setForeground(Color.BLACK);
         btnSendImage.addActionListener(e -> sendImage());
         btnPanel.add(btnSendImage);
 
-        btnSendFile = new JButton("📁 Truyền File TCP");
+        btnSendFile = new JButton("Truyền file TCP");
         btnSendFile.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnSendFile.setUI(new javax.swing.plaf.basic.BasicButtonUI());
+        btnSendFile.setBackground(Color.WHITE);
         btnSendFile.setForeground(Color.BLACK);
+        ImageIcon uploadIcon = patron.UIStyleHelper.getIcon("/images/upload.png", 16, 16);
+        if (uploadIcon != null) btnSendFile.setIcon(uploadIcon);
         btnSendFile.addActionListener(e -> sendTcpFile());
         btnPanel.add(btnSendFile);
 

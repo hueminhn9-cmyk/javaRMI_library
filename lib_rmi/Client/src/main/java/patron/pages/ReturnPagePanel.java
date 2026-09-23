@@ -3,6 +3,7 @@ package patron.pages;
 import common.model.Response;
 import patron.ClientController;
 import common.model.Patron;
+import patron.UIStyleHelper;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -37,47 +38,52 @@ public class ReturnPagePanel extends JPanel {
 
     private void initComponents() {
         setLayout(new BorderLayout());
+        setBackground(UIStyleHelper.COLOR_BG_LIGHT);
+        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // Left Panel: Borrow History Detail & Return Button
-        JPanel leftPanel = new JPanel(new BorderLayout());
-        leftPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        // Left Panel: Ticket Detail Card
+        JPanel leftCard = UIStyleHelper.createCardPanel("Chi Tiết Phiếu Mượn");
+        leftCard.setPreferredSize(new Dimension(380, 0));
 
-        JLabel titleDetail = new JLabel("Borrow Ticket Detail", SwingConstants.CENTER);
-        titleDetail.setFont(new Font("Montserrat ExtraBold", Font.BOLD, 22));
-        leftPanel.add(titleDetail, BorderLayout.NORTH);
+        JPanel detailContainer = new JPanel();
+        detailContainer.setLayout(new BoxLayout(detailContainer, BoxLayout.Y_AXIS));
+        detailContainer.setOpaque(false);
+        detailContainer.setBorder(BorderFactory.createEmptyBorder(10, 5, 10, 5));
 
-        JPanel infoGrid = new JPanel(new GridLayout(4, 2, 10, 25));
-        infoGrid.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        detailContainer.add(createDetailRow("Tên sách:", lb_BookName_Return = new JLabel("-")));
+        detailContainer.add(Box.createVerticalStrut(15));
+        detailContainer.add(createDetailRow("Ngày mượn:", lb_Return_TimeStart = new JLabel("-")));
+        detailContainer.add(Box.createVerticalStrut(15));
+        detailContainer.add(createDetailRow("Hạn trả:", lb_Return_TimeEnd = new JLabel("-")));
+        detailContainer.add(Box.createVerticalStrut(25));
 
-        infoGrid.add(new JLabel("Book Name:"));
-        lb_BookName_Return = new JLabel("-");
-        infoGrid.add(lb_BookName_Return);
-
-        infoGrid.add(new JLabel("Start Time:"));
-        lb_Return_TimeStart = new JLabel("-");
-        infoGrid.add(lb_Return_TimeStart);
-
-        infoGrid.add(new JLabel("End Time:"));
-        lb_Return_TimeEnd = new JLabel("-");
-        infoGrid.add(lb_Return_TimeEnd);
-
-        btn_Return = new JButton("Return this book");
-        btn_Return.setFont(new Font("Montserrat", Font.BOLD, 13));
-        btn_Return.setBackground(new Color(46, 204, 113));
-        btn_Return.setForeground(Color.WHITE);
+        btn_Return = new JButton("Trả sách");
+        ImageIcon returnIcon = UIStyleHelper.getIcon("/images/refresh.png", 16, 16);
+        if (returnIcon != null) btn_Return.setIcon(returnIcon);
+        UIStyleHelper.styleButton(btn_Return, UIStyleHelper.COLOR_SUCCESS_BG, UIStyleHelper.COLOR_SUCCESS_BORDER, Color.BLACK);
+        btn_Return.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btn_Return.setMaximumSize(new Dimension(220, 40));
         btn_Return.addActionListener(e -> btn_ReturnActionPerformed(e));
-        infoGrid.add(btn_Return);
+        detailContainer.add(btn_Return);
 
-        leftPanel.add(infoGrid, BorderLayout.CENTER);
+        leftCard.add(detailContainer, BorderLayout.NORTH);
 
-        // Right Panel: Search & Checkout Table
-        JPanel rightPanel = new JPanel(new BorderLayout(5, 5));
-        rightPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        // Right Panel: Search & Table Card
+        JPanel rightCard = UIStyleHelper.createCardPanel("Danh Sách Sách Đang Mượn");
 
-        JPanel searchBarPanel = new JPanel(new BorderLayout(5, 5));
-        JLabel lblSearch = new JLabel(" Search: ");
-        lblSearch.setFont(new Font("Montserrat", Font.BOLD, 14));
+        JPanel searchBarPanel = new JPanel(new BorderLayout(8, 0));
+        searchBarPanel.setOpaque(false);
+        searchBarPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 12, 0));
+
+        JLabel lblSearch = new JLabel("Tìm kiếm:");
+        ImageIcon searchIcon = UIStyleHelper.getIcon("/images/search.png", 16, 16);
+        if (searchIcon != null) lblSearch.setIcon(searchIcon);
+        lblSearch.setFont(UIStyleHelper.FONT_BODY_BOLD);
+        lblSearch.setForeground(UIStyleHelper.COLOR_TEXT_MAIN);
+
         tf_Search_Return = new JTextField();
+        UIStyleHelper.styleTextField(tf_Search_Return);
+
         searchBarPanel.add(lblSearch, BorderLayout.WEST);
         searchBarPanel.add(tf_Search_Return, BorderLayout.CENTER);
 
@@ -89,13 +95,35 @@ public class ReturnPagePanel extends JPanel {
             }
         });
         sp_Profile = new JScrollPane(tbl_Profile);
+        UIStyleHelper.styleTable(tbl_Profile, sp_Profile);
 
-        rightPanel.add(searchBarPanel, BorderLayout.NORTH);
-        rightPanel.add(sp_Profile, BorderLayout.CENTER);
+        rightCard.add(searchBarPanel, BorderLayout.NORTH);
+        rightCard.add(sp_Profile, BorderLayout.CENTER);
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
-        splitPane.setResizeWeight(0.4);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftCard, rightCard);
+        splitPane.setResizeWeight(0.35);
+        splitPane.setDividerSize(8);
+        splitPane.setBorder(null);
+        splitPane.setBackground(UIStyleHelper.COLOR_BG_LIGHT);
+
         add(splitPane, BorderLayout.CENTER);
+    }
+
+    private JPanel createDetailRow(String labelText, JLabel valueLabel) {
+        JPanel row = new JPanel(new BorderLayout(10, 0));
+        row.setOpaque(false);
+
+        JLabel lbl = new JLabel(labelText);
+        lbl.setFont(UIStyleHelper.FONT_BODY_BOLD);
+        lbl.setForeground(UIStyleHelper.COLOR_TEXT_MUTED);
+        lbl.setPreferredSize(new Dimension(100, 24));
+
+        valueLabel.setFont(UIStyleHelper.FONT_BODY_BOLD);
+        valueLabel.setForeground(UIStyleHelper.COLOR_TEXT_MAIN);
+
+        row.add(lbl, BorderLayout.WEST);
+        row.add(valueLabel, BorderLayout.CENTER);
+        return row;
     }
 
     public void showCheckouts() {
@@ -128,9 +156,8 @@ public class ReturnPagePanel extends JPanel {
                 });
 
                 tbl_Profile.setModel(model);
-                tbl_Profile.setRowHeight(40);
                 tbl_Profile.setDefaultEditor(Object.class, null);
-                sp_Profile.setViewportView(tbl_Profile);
+                UIStyleHelper.styleTable(tbl_Profile, sp_Profile);
             }
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -170,8 +197,7 @@ public class ReturnPagePanel extends JPanel {
                 ex.printStackTrace();
             }
         } else {
-            JOptionPane.showMessageDialog(this, "Please select a borrow ticket from the table first!");
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn một phiếu mượn trong bảng trước!");
         }
     }
 }
-

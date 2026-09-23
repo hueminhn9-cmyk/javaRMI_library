@@ -3,6 +3,7 @@ package patron.pages;
 import common.model.Response;
 import patron.ClientController;
 import common.model.Patron;
+import patron.UIStyleHelper;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -24,23 +25,17 @@ public class HomePagePanel extends JPanel {
 
     private void initComponents() {
         setLayout(new BorderLayout());
+        setBackground(UIStyleHelper.COLOR_BG_LIGHT);
+        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        JLabel titleLabel = new JLabel("VKU Library - Notification Center");
-        titleLabel.setFont(new Font("Montserrat ExtraBold", Font.BOLD, 20));
-        titleLabel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        headerPanel.add(titleLabel, BorderLayout.WEST);
-
-        add(headerPanel, BorderLayout.NORTH);
+        JPanel cardContainer = UIStyleHelper.createCardPanel("Trung Tâm Thông Báo (Notification Center)");
 
         tbl_Notification = new JTable();
         sp_Notification = new JScrollPane(tbl_Notification);
+        UIStyleHelper.styleTable(tbl_Notification, sp_Notification);
 
-        JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
-        centerPanel.add(sp_Notification, BorderLayout.CENTER);
-
-        add(centerPanel, BorderLayout.CENTER);
+        cardContainer.add(sp_Notification, BorderLayout.CENTER);
+        add(cardContainer, BorderLayout.CENTER);
     }
 
     public void showNotification() {
@@ -51,13 +46,11 @@ public class HomePagePanel extends JPanel {
             }
             if (response != null && response.getData() instanceof DefaultTableModel) {
                 tbl_Notification.setModel((DefaultTableModel) response.getData());
-                tbl_Notification.setRowHeight(40);
                 tbl_Notification.setDefaultEditor(Object.class, null);
-                sp_Notification.setViewportView(tbl_Notification);
+                UIStyleHelper.styleTable(tbl_Notification, sp_Notification);
             }
         } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
 }
-
