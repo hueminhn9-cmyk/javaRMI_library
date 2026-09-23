@@ -2,6 +2,7 @@ package chat;
 
 import common.chat.ChatPacket;
 import common.chat.FilePacket;
+import common.rmi.Config;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -56,11 +57,11 @@ public class ChatPanel extends JPanel implements TCPChatClient.ChatListener {
         topConfigPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(203, 213, 225)));
 
         topConfigPanel.add(new JLabel("Server IP:"));
-        txtServerIp = new JTextField("127.0.0.1", 12);
+        txtServerIp = new JTextField(Config.IP_SERVER, 12);
         topConfigPanel.add(txtServerIp);
 
         topConfigPanel.add(new JLabel("Port:"));
-        txtPort = new JTextField("7777", 5);
+        txtPort = new JTextField(String.valueOf(Config.PORT_CHAT), 5);
         topConfigPanel.add(txtPort);
 
         btnConnect = new JButton("KẾT NỐI SERVER");
@@ -277,7 +278,7 @@ public class ChatPanel extends JPanel implements TCPChatClient.ChatListener {
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File selectedFile = chooser.getSelectedFile();
             String serverIp = txtServerIp.getText().trim();
-            int filePort = 8888; // File TCP Port
+            int filePort = Config.PORT_FILE;
 
             JProgressBar progressBar = new JProgressBar(0, 100);
             progressBar.setStringPainted(true);
@@ -383,7 +384,7 @@ public class ChatPanel extends JPanel implements TCPChatClient.ChatListener {
         if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             File saveFile = chooser.getSelectedFile();
             String serverIp = txtServerIp.getText().trim();
-            int filePort = 8888;
+            int filePort = Config.PORT_FILE;
 
             JProgressBar progressBar = new JProgressBar(0, 100);
             progressBar.setStringPainted(true);
