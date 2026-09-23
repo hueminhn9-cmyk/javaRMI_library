@@ -1,6 +1,8 @@
 package admin;
 
-import common.*;
+import common.model.*;
+import common.rmi.*;
+import common.chat.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.net.MalformedURLException;
@@ -415,3 +417,4 @@ public class ManagerController {
 
 
 }
+

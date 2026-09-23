@@ -1,7 +1,9 @@
 package admin.pages;
 
 import admin.ManagerController;
-import common.*;
+import common.model.*;
+import common.rmi.*;
+import common.chat.*;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -246,17 +248,22 @@ public class CategoryManagePanel extends JPanel {
 
     private JButton createBtn(String text, String iconPath, Color bg) {
         JButton btn = new JButton(text);
+        btn.setUI(new javax.swing.plaf.basic.BasicButtonUI());
         if (iconPath != null) {
             try {
                 btn.setIcon(new ImageIcon(getClass().getResource(iconPath)));
             } catch (Exception ignored) {}
         }
         btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btn.setBackground(bg);
-        btn.setForeground(Color.WHITE);
+        btn.setBackground(Color.WHITE);
+        btn.setForeground(Color.BLACK);
+        btn.setBorder(BorderFactory.createCompoundBorder(
+            new javax.swing.border.LineBorder(bg, 2, true),
+            new javax.swing.border.EmptyBorder(5, 10, 5, 10)
+        ));
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setPreferredSize(new Dimension(130, 40));
+        btn.setPreferredSize(new Dimension(135, 40));
         return btn;
     }
 
@@ -265,3 +272,5 @@ public class CategoryManagePanel extends JPanel {
         tf.setPreferredSize(new Dimension(220, 38));
     }
 }
+
+

@@ -1,8 +1,8 @@
 package patron.pages;
 
-import common.Response;
+import common.model.Response;
 import patron.ClientController;
-import common.Patron;
+import common.model.Patron;
 
 import javax.swing.*;
 import java.awt.*;
@@ -128,3 +128,4 @@ public class ProfilePagePanel extends JPanel {
         }
     }
 }
+

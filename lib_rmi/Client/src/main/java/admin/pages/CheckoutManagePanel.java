@@ -1,9 +1,7 @@
 package admin.pages;
 
 import admin.ManagerController;
-import common.CenteredTableCellRenderer;
-import common.CustomHeaderRenderer;
-import common.Response;
+import common.model.Response;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -54,9 +52,14 @@ public class CheckoutManagePanel extends JPanel {
         tf_search_Checkout.setMargin(new Insets(4, 8, 4, 8));
 
         btn_refresh_Checkout = new JButton("Làm Mới");
+        btn_refresh_Checkout.setUI(new javax.swing.plaf.basic.BasicButtonUI());
         btn_refresh_Checkout.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btn_refresh_Checkout.setBackground(new Color(75, 85, 99));
-        btn_refresh_Checkout.setForeground(Color.WHITE);
+        btn_refresh_Checkout.setBackground(Color.WHITE);
+        btn_refresh_Checkout.setForeground(Color.BLACK);
+        btn_refresh_Checkout.setBorder(BorderFactory.createCompoundBorder(
+            new javax.swing.border.LineBorder(new Color(75, 85, 99), 2, true),
+            new javax.swing.border.EmptyBorder(4, 10, 4, 10)
+        ));
         btn_refresh_Checkout.setFocusPainted(false);
         btn_refresh_Checkout.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn_refresh_Checkout.setPreferredSize(new Dimension(120, 38));
@@ -112,3 +115,5 @@ public class CheckoutManagePanel extends JPanel {
         }
     }
 }
+
+

@@ -149,6 +149,21 @@ CREATE TABLE `db_log` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 13. Table: chat_history
+DROP TABLE IF EXISTS `chat_history`;
+CREATE TABLE `chat_history` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `sender` VARCHAR(255) NOT NULL,
+  `receiver` VARCHAR(255) NOT NULL,
+  `msg_type` VARCHAR(50) NOT NULL,
+  `content` TEXT,
+  `image_bytes` LONGBLOB,
+  `file_name` VARCHAR(255),
+  `file_size` BIGINT DEFAULT 0,
+  `sent_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ========================================================

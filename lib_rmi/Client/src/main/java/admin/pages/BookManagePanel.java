@@ -1,7 +1,9 @@
 package admin.pages;
 
 import admin.ManagerController;
-import common.*;
+import common.model.*;
+import common.rmi.*;
+import common.chat.*;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -23,6 +25,9 @@ public class BookManagePanel extends JPanel {
     private JTextField tf_title_Book;
     private JComboBox<Category> cb_category_Book;
     private JComboBox<Author> cb_author_Book;
+
+    private JButton btn_add_category_quick;
+    private JButton btn_add_author_quick;
 
     private JButton btn_create_Book;
     private JButton btn_update_Book;
@@ -54,8 +59,9 @@ public class BookManagePanel extends JPanel {
         ));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 12, 10, 12);
+        gbc.insets = new Insets(8, 10, 8, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
 
         tf_ID_Book = new JTextField();
         tf_ID_Book.setEditable(false);
@@ -64,18 +70,43 @@ public class BookManagePanel extends JPanel {
         tf_title_Book = new JTextField();
         styleTextField(tf_title_Book);
 
+        // Editable JComboBoxes so user can directly TYPE a new Category / Author name
         cb_category_Book = new JComboBox<>();
-        cb_category_Book.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        cb_category_Book.setPreferredSize(new Dimension(220, 38));
+        cb_category_Book.setEditable(true);
+        cb_category_Book.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        cb_category_Book.setPreferredSize(new Dimension(180, 36));
+
+        btn_add_category_quick = new JButton("+");
+        btn_add_category_quick.setToolTipText("Thêm nhanh Thể Loại mới");
+        btn_add_category_quick.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn_add_category_quick.setPreferredSize(new Dimension(36, 36));
+        btn_add_category_quick.addActionListener(e -> quickAddCategory());
+
+        JPanel catPanel = new JPanel(new BorderLayout(4, 0));
+        catPanel.setOpaque(false);
+        catPanel.add(cb_category_Book, BorderLayout.CENTER);
+        catPanel.add(btn_add_category_quick, BorderLayout.EAST);
 
         cb_author_Book = new JComboBox<>();
-        cb_author_Book.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        cb_author_Book.setPreferredSize(new Dimension(220, 38));
+        cb_author_Book.setEditable(true);
+        cb_author_Book.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        cb_author_Book.setPreferredSize(new Dimension(180, 36));
 
-        JLabel lblId = new JLabel("Mã Sách (ID):"); lblId.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        JLabel lblTitle = new JLabel("Tên Sách:"); lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        JLabel lblCat = new JLabel("Thể Loại:"); lblCat.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        JLabel lblAuthor = new JLabel("Tác Giả:"); lblAuthor.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn_add_author_quick = new JButton("+");
+        btn_add_author_quick.setToolTipText("Thêm nhanh Tác Giả mới");
+        btn_add_author_quick.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn_add_author_quick.setPreferredSize(new Dimension(36, 36));
+        btn_add_author_quick.addActionListener(e -> quickAddAuthor());
+
+        JPanel authorPanel = new JPanel(new BorderLayout(4, 0));
+        authorPanel.setOpaque(false);
+        authorPanel.add(cb_author_Book, BorderLayout.CENTER);
+        authorPanel.add(btn_add_author_quick, BorderLayout.EAST);
+
+        JLabel lblId = new JLabel("Mã Sách (ID):"); lblId.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        JLabel lblTitle = new JLabel("Tên Sách:"); lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        JLabel lblCat = new JLabel("Thể Loại (Tự nhập / Chọn):"); lblCat.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        JLabel lblAuthor = new JLabel("Tác Giả (Tự nhập / Chọn):"); lblAuthor.setFont(new Font("Segoe UI", Font.BOLD, 12));
 
         gbc.gridx = 0; gbc.gridy = 0; formCard.add(lblId, gbc);
         gbc.gridx = 1; formCard.add(tf_ID_Book, gbc);
@@ -84,22 +115,22 @@ public class BookManagePanel extends JPanel {
         gbc.gridx = 1; formCard.add(tf_title_Book, gbc);
 
         gbc.gridx = 0; gbc.gridy = 2; formCard.add(lblCat, gbc);
-        gbc.gridx = 1; formCard.add(cb_category_Book, gbc);
+        gbc.gridx = 1; formCard.add(catPanel, gbc);
 
         gbc.gridx = 0; gbc.gridy = 3; formCard.add(lblAuthor, gbc);
-        gbc.gridx = 1; formCard.add(cb_author_Book, gbc);
+        gbc.gridx = 1; formCard.add(authorPanel, gbc);
 
-        // Buttons Panel - Moved UP & enlarged with icons
-        JPanel btnPanel = new JPanel(new GridLayout(2, 2, 10, 10));
+        // Buttons Panel
+        JPanel btnPanel = new JPanel(new GridLayout(2, 2, 8, 8));
         btnPanel.setBorder(BorderFactory.createEmptyBorder(12, 0, 12, 0));
 
-        btn_create_Book = createBtn("Thêm Mới", "/images/add.png", new Color(22, 163, 74));
+        btn_create_Book = createBtn("Thêm Mới Sách", "/images/add.png", new Color(22, 163, 74));
         btn_create_Book.addActionListener(e -> btn_create_BookActionPerformed());
 
         btn_update_Book = createBtn("Cập Nhật", "/images/edit.png", new Color(37, 99, 235));
         btn_update_Book.addActionListener(e -> btn_update_BookActionPerformed());
 
-        btn_delete_Book = createBtn("Xóa", "/images/bin.png", new Color(220, 38, 38));
+        btn_delete_Book = createBtn("Xóa Sách", "/images/bin.png", new Color(220, 38, 38));
         btn_delete_Book.addActionListener(e -> btn_delete_BookActionPerformed());
 
         btn_refresh_Book = createBtn("Làm Mới", "/images/refresh.png", new Color(75, 85, 99));
@@ -122,15 +153,23 @@ public class BookManagePanel extends JPanel {
         JPanel tablePanel = new JPanel(new BorderLayout(10, 10));
         JPanel searchBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         
-        JLabel searchIcon = new JLabel();
-        try {
-            searchIcon.setIcon(new ImageIcon(getClass().getResource("/images/search_32.png")));
-        } catch (Exception ignored) {}
-        searchIcon.setText(" Tìm Kiếm Sách: ");
+        JLabel searchIcon = new JLabel("🔍 Tìm Kiếm Sách: ");
         searchIcon.setFont(new Font("Segoe UI", Font.BOLD, 14));
         
         tf_search_Book = new JTextField(25);
         styleTextField(tf_search_Book);
+        tf_search_Book.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { applyFilter(tf_search_Book.getText()); }
+            @Override public void removeUpdate(DocumentEvent e) { applyFilter(tf_search_Book.getText()); }
+            @Override public void changedUpdate(DocumentEvent e) { applyFilter(tf_search_Book.getText()); }
+
+            private void applyFilter(String str) {
+                if (sorter != null) {
+                    if (str == null || str.trim().isEmpty()) sorter.setRowFilter(null);
+                    else sorter.setRowFilter(RowFilter.regexFilter("(?i)" + str));
+                }
+            }
+        });
         searchBar.add(searchIcon);
         searchBar.add(tf_search_Book);
 
@@ -149,28 +188,175 @@ public class BookManagePanel extends JPanel {
         add(tablePanel, BorderLayout.CENTER);
     }
 
+    private String normalizeString(String input) {
+        if (input == null) return "";
+        return input.replaceAll("\\s+", " ").trim();
+    }
+
+    private void quickAddCategory() {
+        String input = JOptionPane.showInputDialog(this, "Nhập tên Thể Loại mới cần thêm:", "Thêm Thể Loại Nhanh", JOptionPane.QUESTION_MESSAGE);
+        String catName = normalizeString(input);
+        if (!catName.isEmpty()) {
+            // Check if already exists in combo box
+            for (int i = 0; i < cb_category_Book.getItemCount(); i++) {
+                Category c = cb_category_Book.getItemAt(i);
+                if (c != null && normalizeString(c.getName()).equalsIgnoreCase(catName)) {
+                    cb_category_Book.setSelectedIndex(i);
+                    JOptionPane.showMessageDialog(this, "Thể loại '" + c.getName() + "' đã có sẵn trong CSDL! Hệ thống đã tự động chọn.", "Thông Báo", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+            }
+
+            try {
+                Category newCat = new Category();
+                newCat.setName(catName);
+                Response res = controller.createCategoryController(newCat);
+                if (res != null) {
+                    JOptionPane.showMessageDialog(this, res.getData());
+                    showDataComboBoxCategory();
+                    for (int i = 0; i < cb_category_Book.getItemCount(); i++) {
+                        Category c = cb_category_Book.getItemAt(i);
+                        if (c != null && normalizeString(c.getName()).equalsIgnoreCase(catName)) {
+                            cb_category_Book.setSelectedIndex(i);
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    private void quickAddAuthor() {
+        String input = JOptionPane.showInputDialog(this, "Nhập tên Tác Giả mới cần thêm:", "Thêm Tác Giả Nhanh", JOptionPane.QUESTION_MESSAGE);
+        String authorName = normalizeString(input);
+        if (!authorName.isEmpty()) {
+            // Check if already exists in combo box
+            for (int i = 0; i < cb_author_Book.getItemCount(); i++) {
+                Author a = cb_author_Book.getItemAt(i);
+                if (a != null && normalizeString(a.getName()).equalsIgnoreCase(authorName)) {
+                    cb_author_Book.setSelectedIndex(i);
+                    JOptionPane.showMessageDialog(this, "Tác giả '" + a.getName() + "' đã có sẵn trong CSDL! Hệ thống đã tự động chọn.", "Thông Báo", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+            }
+
+            try {
+                Author newAuth = new Author();
+                newAuth.setName(authorName);
+                Response res = controller.createAuthorController(newAuth);
+                if (res != null) {
+                    JOptionPane.showMessageDialog(this, res.getData());
+                    showDataComboBoxAuthor();
+                    for (int i = 0; i < cb_author_Book.getItemCount(); i++) {
+                        Author a = cb_author_Book.getItemAt(i);
+                        if (a != null && normalizeString(a.getName()).equalsIgnoreCase(authorName)) {
+                            cb_author_Book.setSelectedIndex(i);
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    private int resolveOrCreateCategory(Object selectedItem) {
+        if (selectedItem == null) return 0;
+        if (selectedItem instanceof Category) {
+            return ((Category) selectedItem).getId();
+        }
+
+        String name = normalizeString(selectedItem.toString());
+        if (name.isEmpty()) return 0;
+
+        // Check if name matches an existing Category (normalized & case-insensitive)
+        for (int i = 0; i < cb_category_Book.getItemCount(); i++) {
+            Category c = cb_category_Book.getItemAt(i);
+            if (c != null && normalizeString(c.getName()).equalsIgnoreCase(name)) {
+                cb_category_Book.setSelectedIndex(i);
+                return c.getId();
+            }
+        }
+
+        // Auto create Category in DB via RMI if not exists
+        try {
+            Category newCat = new Category();
+            newCat.setName(name);
+            Response res = controller.createCategoryController(newCat);
+            if (res != null && res.getStatus() == 200) {
+                showDataComboBoxCategory();
+                for (int i = 0; i < cb_category_Book.getItemCount(); i++) {
+                    Category c = cb_category_Book.getItemAt(i);
+                    if (c != null && normalizeString(c.getName()).equalsIgnoreCase(name)) {
+                        cb_category_Book.setSelectedIndex(i);
+                        return c.getId();
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return 0;
+    }
+
+    private int resolveOrCreateAuthor(Object selectedItem) {
+        if (selectedItem == null) return 0;
+        if (selectedItem instanceof Author) {
+            return ((Author) selectedItem).getId();
+        }
+
+        String name = normalizeString(selectedItem.toString());
+        if (name.isEmpty()) return 0;
+
+        // Check if name matches an existing Author (normalized & case-insensitive)
+        for (int i = 0; i < cb_author_Book.getItemCount(); i++) {
+            Author a = cb_author_Book.getItemAt(i);
+            if (a != null && normalizeString(a.getName()).equalsIgnoreCase(name)) {
+                cb_author_Book.setSelectedIndex(i);
+                return a.getId();
+            }
+        }
+
+        // Auto create Author in DB via RMI if not exists
+        try {
+            Author newAuth = new Author();
+            newAuth.setName(name);
+            Response res = controller.createAuthorController(newAuth);
+            if (res != null && res.getStatus() == 200) {
+                showDataComboBoxAuthor();
+                for (int i = 0; i < cb_author_Book.getItemCount(); i++) {
+                    Author a = cb_author_Book.getItemAt(i);
+                    if (a != null && normalizeString(a.getName()).equalsIgnoreCase(name)) {
+                        cb_author_Book.setSelectedIndex(i);
+                        return a.getId();
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return 0;
+    }
+
     public synchronized void showTableBook() {
         try {
             Response response = controller.getBooksController();
             if (response != null && response.getData() instanceof DefaultTableModel) {
                 DefaultTableModel model = (DefaultTableModel) response.getData();
                 sorter = new TableRowSorter<>(model);
+                tbl_Book.setModel(model);
                 tbl_Book.setRowSorter(sorter);
 
-                tf_search_Book.getDocument().addDocumentListener(new DocumentListener() {
-                    @Override public void insertUpdate(DocumentEvent e) { search(tf_search_Book.getText()); }
-                    @Override public void removeUpdate(DocumentEvent e) { search(tf_search_Book.getText()); }
-                    @Override public void changedUpdate(DocumentEvent e) { search(tf_search_Book.getText()); }
+                String searchStr = tf_search_Book.getText();
+                if (searchStr != null && !searchStr.trim().isEmpty()) {
+                    sorter.setRowFilter(RowFilter.regexFilter("(?i)" + searchStr));
+                }
 
-                    private void search(String str) {
-                        if (str.length() == 0) sorter.setRowFilter(null);
-                        else sorter.setRowFilter(RowFilter.regexFilter("(?i)" + str));
-                    }
-                });
-
-                tbl_Book.setModel(model);
                 tbl_Book.getTableHeader().setDefaultRenderer(new CustomHeaderRenderer());
-                tbl_Book.setRowHeight(30);
+                tbl_Book.setRowHeight(34);
                 tbl_Book.setDefaultEditor(Object.class, null);
                 TableColumn indexColumn = tbl_Book.getColumnModel().getColumn(0);
                 indexColumn.setCellRenderer(new CenteredTableCellRenderer());
@@ -219,7 +405,8 @@ public class BookManagePanel extends JPanel {
 
             String categoryName = String.valueOf(model.getValueAt(modelRow, 2));
             for (int i = 0; i < cb_category_Book.getItemCount(); i++) {
-                if (cb_category_Book.getItemAt(i).getName().equalsIgnoreCase(categoryName)) {
+                Category c = cb_category_Book.getItemAt(i);
+                if (c != null && c.getName().equalsIgnoreCase(categoryName)) {
                     cb_category_Book.setSelectedIndex(i);
                     break;
                 }
@@ -227,7 +414,8 @@ public class BookManagePanel extends JPanel {
 
             String authorName = String.valueOf(model.getValueAt(modelRow, 3));
             for (int i = 0; i < cb_author_Book.getItemCount(); i++) {
-                if (cb_author_Book.getItemAt(i).getName().equalsIgnoreCase(authorName)) {
+                Author a = cb_author_Book.getItemAt(i);
+                if (a != null && a.getName().equalsIgnoreCase(authorName)) {
                     cb_author_Book.setSelectedIndex(i);
                     break;
                 }
@@ -237,20 +425,28 @@ public class BookManagePanel extends JPanel {
 
     private void btn_create_BookActionPerformed() {
         String title = tf_title_Book.getText().trim();
-        Category category = (Category) cb_category_Book.getSelectedItem();
-        Author author = (Author) cb_author_Book.getSelectedItem();
+        Object selectedCat = cb_category_Book.getSelectedItem();
+        Object selectedAuth = cb_author_Book.getSelectedItem();
 
-        if (title.isEmpty() || category == null || author == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin sách!");
+        if (title.isEmpty() || selectedCat == null || selectedAuth == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ tên sách, thể loại và tác giả!");
+            return;
+        }
+
+        int catId = resolveOrCreateCategory(selectedCat);
+        int authId = resolveOrCreateAuthor(selectedAuth);
+
+        if (catId == 0 || authId == 0) {
+            JOptionPane.showMessageDialog(this, "Không thể xác định hoặc tạo Thể loại / Tác giả!");
             return;
         }
 
         Book book = new Book();
         book.setTitle(title);
-        book.setCategory_id(category.getId());
+        book.setCategory_id(catId);
 
         try {
-            Response response = controller.createBookController(book, author.getId());
+            Response response = controller.createBookController(book, authId);
             if (response != null) {
                 JOptionPane.showMessageDialog(this, response.getData());
                 btn_refresh_BookActionPerformed();
@@ -269,16 +465,19 @@ public class BookManagePanel extends JPanel {
         }
 
         String title = tf_title_Book.getText().trim();
-        Category category = (Category) cb_category_Book.getSelectedItem();
-        Author author = (Author) cb_author_Book.getSelectedItem();
+        Object selectedCat = cb_category_Book.getSelectedItem();
+        Object selectedAuth = cb_author_Book.getSelectedItem();
+
+        int catId = resolveOrCreateCategory(selectedCat);
+        int authId = resolveOrCreateAuthor(selectedAuth);
 
         Book book = new Book();
         book.setId(Integer.parseInt(idText));
         book.setTitle(title);
-        book.setCategory_id(category != null ? category.getId() : 0);
+        book.setCategory_id(catId);
 
         try {
-            Response response = controller.updateBookController(book, author != null ? author.getId() : 0);
+            Response response = controller.updateBookController(book, authId);
             if (response != null) {
                 JOptionPane.showMessageDialog(this, response.getData());
                 btn_refresh_BookActionPerformed();
@@ -321,17 +520,22 @@ public class BookManagePanel extends JPanel {
 
     private JButton createBtn(String text, String iconPath, Color bg) {
         JButton btn = new JButton(text);
+        btn.setUI(new javax.swing.plaf.basic.BasicButtonUI());
         if (iconPath != null) {
             try {
                 btn.setIcon(new ImageIcon(getClass().getResource(iconPath)));
             } catch (Exception ignored) {}
         }
         btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btn.setBackground(bg);
-        btn.setForeground(Color.WHITE);
+        btn.setBackground(Color.WHITE);
+        btn.setForeground(Color.BLACK);
+        btn.setBorder(BorderFactory.createCompoundBorder(
+            new javax.swing.border.LineBorder(bg, 2, true),
+            new javax.swing.border.EmptyBorder(5, 10, 5, 10)
+        ));
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setPreferredSize(new Dimension(130, 40));
+        btn.setPreferredSize(new Dimension(135, 40));
         return btn;
     }
 
@@ -340,3 +544,6 @@ public class BookManagePanel extends JPanel {
         tf.setPreferredSize(new Dimension(220, 38));
     }
 }
+
+
+

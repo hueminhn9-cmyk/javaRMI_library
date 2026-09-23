@@ -1,7 +1,9 @@
 package admin.pages;
 
 import admin.ManagerController;
-import common.*;
+import common.model.*;
+import common.rmi.*;
+import common.chat.*;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -25,6 +27,7 @@ public class PatronManagePanel extends JPanel {
     private JTextField tf_email_Patron;
     private JTextField tf_pass_Patron;
     private JCheckBox checkBox_Patron;
+    private JComboBox<String> cb_role_Patron;
 
     private JButton btn_update_Patron;
     private JButton btn_refresh_Patron;
@@ -46,7 +49,7 @@ public class PatronManagePanel extends JPanel {
 
         JPanel formCard = new JPanel(new GridBagLayout());
         formCard.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(new Color(203, 213, 225), 1), " Thông Tin Độc Giả ",
+            BorderFactory.createLineBorder(new Color(203, 213, 225), 1), " Thông Tin Độc Giả & Phân Quyền ",
             javax.swing.border.TitledBorder.LEFT, javax.swing.border.TitledBorder.TOP,
             new Font("Segoe UI", Font.BOLD, 15), new Color(30, 41, 59)
         ));
@@ -76,6 +79,11 @@ public class PatronManagePanel extends JPanel {
         checkBox_Patron.setFont(new Font("Segoe UI", Font.BOLD, 13));
         checkBox_Patron.setForeground(new Color(30, 41, 59));
 
+        cb_role_Patron = new JComboBox<>(new String[]{"PATRON", "ADMIN"});
+        cb_role_Patron.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        cb_role_Patron.setPreferredSize(new Dimension(220, 38));
+        cb_role_Patron.setBackground(Color.WHITE);
+
         gbc.gridx = 0; gbc.gridy = 0; formCard.add(createLabel("Mã Độc Giả:"), gbc);
         gbc.gridx = 1; formCard.add(tf_ID_Patron, gbc);
 
@@ -94,6 +102,9 @@ public class PatronManagePanel extends JPanel {
         gbc.gridx = 0; gbc.gridy = 5; formCard.add(createLabel("Trạng Thái:"), gbc);
         gbc.gridx = 1; formCard.add(checkBox_Patron, gbc);
 
+        gbc.gridx = 0; gbc.gridy = 6; formCard.add(createLabel("Vai Trò (Role):"), gbc);
+        gbc.gridx = 1; formCard.add(cb_role_Patron, gbc);
+
         JPanel btnPanel = new JPanel(new GridLayout(2, 2, 10, 10));
         btnPanel.setBorder(BorderFactory.createEmptyBorder(15, 0, 10, 0));
 
@@ -110,7 +121,7 @@ public class PatronManagePanel extends JPanel {
         btnPanel.add(btn_refresh_Patron);
         btnPanel.add(btn_send);
 
-        gbc.gridx = 0; gbc.gridy = 6; gbc.gridwidth = 2;
+        gbc.gridx = 0; gbc.gridy = 7; gbc.gridwidth = 2;
         formCard.add(btnPanel, gbc);
 
         JScrollPane formScroll = new JScrollPane(formCard);
@@ -211,6 +222,11 @@ public class PatronManagePanel extends JPanel {
             
             String statusStr = String.valueOf(model.getValueAt(modelRow, 4));
             checkBox_Patron.setSelected(statusStr.equalsIgnoreCase("Available") || statusStr.equalsIgnoreCase("true") || statusStr.equalsIgnoreCase("1"));
+
+            if (model.getColumnCount() > 5 && model.getValueAt(modelRow, 5) != null) {
+                String roleVal = String.valueOf(model.getValueAt(modelRow, 5));
+                cb_role_Patron.setSelectedItem(roleVal.equalsIgnoreCase("ADMIN") ? "ADMIN" : "PATRON");
+            }
         }
     }
 
@@ -227,6 +243,7 @@ public class PatronManagePanel extends JPanel {
         patron.setLastName(tf_lname_Patron.getText().trim());
         patron.setEmail(tf_email_Patron.getText().trim());
         patron.setStatus(checkBox_Patron.isSelected());
+        patron.setRole(String.valueOf(cb_role_Patron.getSelectedItem()));
 
         try {
             Response response = controller.updatePatronController(patron);
@@ -272,17 +289,23 @@ public class PatronManagePanel extends JPanel {
         tf_email_Patron.setText("");
         tf_pass_Patron.setText("");
         checkBox_Patron.setSelected(true);
+        cb_role_Patron.setSelectedItem("PATRON");
         showTablePatrons();
     }
 
     private JButton createBtn(String text, Color bg, String iconPath) {
         JButton btn = new JButton(text);
+        btn.setUI(new javax.swing.plaf.basic.BasicButtonUI());
         btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btn.setBackground(bg);
-        btn.setForeground(Color.WHITE);
+        btn.setBackground(Color.WHITE);
+        btn.setForeground(Color.BLACK);
+        btn.setBorder(BorderFactory.createCompoundBorder(
+            new javax.swing.border.LineBorder(bg, 2, true),
+            new javax.swing.border.EmptyBorder(5, 10, 5, 10)
+        ));
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setPreferredSize(new Dimension(130, 40));
+        btn.setPreferredSize(new Dimension(135, 40));
         
         if (iconPath != null) {
             java.net.URL imgUrl = getClass().getResource(iconPath);
@@ -299,3 +322,5 @@ public class PatronManagePanel extends JPanel {
         tf.setMargin(new Insets(4, 8, 4, 8));
     }
 }
+
+

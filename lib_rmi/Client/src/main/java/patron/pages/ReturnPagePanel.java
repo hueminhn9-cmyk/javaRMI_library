@@ -1,8 +1,8 @@
 package patron.pages;
 
-import common.Response;
+import common.model.Response;
 import patron.ClientController;
-import common.Patron;
+import common.model.Patron;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -174,3 +174,4 @@ public class ReturnPagePanel extends JPanel {
         }
     }
 }
+

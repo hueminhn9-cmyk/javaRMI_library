@@ -1,9 +1,7 @@
 package admin.pages;
 
 import admin.ManagerController;
-import common.CenteredTableCellRenderer;
-import common.CustomHeaderRenderer;
-import common.Response;
+import common.model.Response;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -54,9 +52,14 @@ public class HoldManagePanel extends JPanel {
         tf_search_Hold.setMargin(new Insets(4, 8, 4, 8));
 
         btn_refresh_Hold = new JButton("Làm Mới");
+        btn_refresh_Hold.setUI(new javax.swing.plaf.basic.BasicButtonUI());
         btn_refresh_Hold.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btn_refresh_Hold.setBackground(new Color(75, 85, 99));
-        btn_refresh_Hold.setForeground(Color.WHITE);
+        btn_refresh_Hold.setBackground(Color.WHITE);
+        btn_refresh_Hold.setForeground(Color.BLACK);
+        btn_refresh_Hold.setBorder(BorderFactory.createCompoundBorder(
+            new javax.swing.border.LineBorder(new Color(75, 85, 99), 2, true),
+            new javax.swing.border.EmptyBorder(4, 10, 4, 10)
+        ));
         btn_refresh_Hold.setFocusPainted(false);
         btn_refresh_Hold.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn_refresh_Hold.setPreferredSize(new Dimension(120, 38));
@@ -112,3 +115,5 @@ public class HoldManagePanel extends JPanel {
         }
     }
 }
+
+

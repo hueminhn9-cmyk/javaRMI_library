@@ -1,6 +1,8 @@
 package patron;
 
-import common.*;
+import common.model.*;
+import common.rmi.*;
+import common.chat.*;
 import javax.swing.*;
 
 public class RegisterGUI extends javax.swing.JFrame {
@@ -188,3 +190,4 @@ public class RegisterGUI extends javax.swing.JFrame {
     private javax.swing.JPasswordField tf_password;
     // End of variables declaration
 }
+

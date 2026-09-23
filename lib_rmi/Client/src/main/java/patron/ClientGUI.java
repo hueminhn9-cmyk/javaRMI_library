@@ -1,8 +1,8 @@
 package patron;
 
-import common.ClientInterface;
-import common.NOTIFY;
-import common.Patron;
+import chat.ChatPanel;
+import common.model.*;
+import common.rmi.*;
 import patron.pages.HomePagePanel;
 import patron.pages.ProfilePagePanel;
 import patron.pages.ReturnPagePanel;
@@ -114,6 +114,7 @@ public class ClientGUI extends JFrame {
         searchPagePanel = new SearchPagePanel(patron, controller);
         returnPagePanel = new ReturnPagePanel(patron, controller);
         profilePagePanel = new ProfilePagePanel(patron, controller);
+        ChatPanel chatPanel = new ChatPanel(patron != null ? patron.getEmail() : "Patron");
 
         panel_main = new JTabbedPane();
         panel_main.setTabPlacement(JTabbedPane.TOP);
@@ -123,11 +124,13 @@ public class ClientGUI extends JFrame {
             panel_main.addTab("Search", new ImageIcon(getClass().getResource("/images/paper-plane.png")), searchPagePanel);
             panel_main.addTab("Return", new ImageIcon(getClass().getResource("/images/reading_24.png")), returnPagePanel);
             panel_main.addTab("Profile", new ImageIcon(getClass().getResource("/images/setting.png")), profilePagePanel);
+            panel_main.addTab("Chat & Truyền File TCP", new ImageIcon(getClass().getResource("/images/paper-plane.png")), chatPanel);
         } catch (Exception e) {
             panel_main.addTab("Home", homePagePanel);
             panel_main.addTab("Search", searchPagePanel);
             panel_main.addTab("Return", returnPagePanel);
             panel_main.addTab("Profile", profilePagePanel);
+            panel_main.addTab("Chat & Truyền File TCP", chatPanel);
         }
 
         add(panel_main, BorderLayout.CENTER);

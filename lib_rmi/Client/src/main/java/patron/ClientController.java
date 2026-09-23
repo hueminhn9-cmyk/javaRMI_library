@@ -1,6 +1,8 @@
 package patron;
 
-import common.*;
+import common.model.*;
+import common.rmi.*;
+import common.chat.*;
 import javax.swing.*;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
@@ -84,3 +86,4 @@ public class ClientController {
         return libraryRemote.updatePatron(patron, false);
     }
 }
+

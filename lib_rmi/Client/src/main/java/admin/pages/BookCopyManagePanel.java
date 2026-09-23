@@ -1,11 +1,16 @@
 package admin.pages;
 
 import admin.ManagerController;
-import common.*;
+import common.model.*;
+import common.rmi.*;
 
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
@@ -19,22 +24,44 @@ public class BookCopyManagePanel extends JPanel {
     private ManagerController controller;
     private TableRowSorter<DefaultTableModel> sorter;
 
+    // Form fields
     private JTextField tf_ID_BookCopy;
+    private JTextField tf_barcode;
     private JComboBox<Book> cb_book_BookCopy;
+    private JTextField tf_shelf;
     private JComboBox<Published> cb_published_BookCopy;
     private JTextField tf_year_BookCopy;
+    private JComboBox<String> cb_policy;
+    private JCheckBox chk_active;
 
+    // Action buttons
     private JButton btn_create_BookCopy;
     private JButton btn_update_BookCopy;
     private JButton btn_delete_BookCopy;
     private JButton btn_refresh_BookCopy;
 
+    // Table & Search
     private JTable tbl_BookCopy;
     private JScrollPane sp_BookCopy;
     private JTextField tf_search_BookCopy;
+    private JLabel lblTotalRecords;
+
+    // Colors - Gray & Blue palette
+    private final Color BG_MAIN = new Color(248, 250, 252);     // Slate 50
+    private final Color BG_CARD = Color.WHITE;
+    private final Color COLOR_PRIMARY = new Color(37, 99, 235); // Blue 600
+    private final Color COLOR_PRIMARY_HOVER = new Color(29, 78, 216);
+    private final Color COLOR_TEXT_DARK = new Color(30, 41, 59); // Slate 800
+    private final Color COLOR_TEXT_MUTED = new Color(100, 116, 139); // Slate 500
+    private final Color COLOR_BORDER = new Color(226, 232, 240); // Slate 200
+    private final Color COLOR_GREEN_BG = new Color(220, 252, 231); // Green 100
+    private final Color COLOR_GREEN_TEXT = new Color(22, 101, 52); // Green 800
+    private final Color COLOR_DANGER_BG = new Color(254, 226, 226); // Red 100
+    private final Color COLOR_DANGER_TEXT = new Color(153, 27, 27); // Red 800
 
     public BookCopyManagePanel(ManagerController controller) {
         this.controller = controller;
+        setBackground(BG_MAIN);
         initComponents();
         showTableBookCopy();
         showDataComboBoxBooks();
@@ -43,101 +70,120 @@ public class BookCopyManagePanel extends JPanel {
 
     private void initComponents() {
         setLayout(new BorderLayout(15, 15));
-        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        setBorder(new EmptyBorder(15, 20, 15, 20));
 
-        JPanel formCard = new JPanel(new GridBagLayout());
-        formCard.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(new Color(203, 213, 225), 1), " Thông Tin Bản Sao Sách ",
-            javax.swing.border.TitledBorder.LEFT, javax.swing.border.TitledBorder.TOP,
-            new Font("Segoe UI", Font.BOLD, 15), new Color(30, 41, 59)
+        // -------------------------------------------------------------
+        // TOP HEADER SECTION: Breadcrumb + Title + Single Stats Card
+        // -------------------------------------------------------------
+        JPanel topContainer = new JPanel();
+        topContainer.setLayout(new BoxLayout(topContainer, BoxLayout.Y_AXIS));
+        topContainer.setOpaque(false);
+
+        // Breadcrumb & Title Bar
+        JPanel titleBar = new JPanel(new BorderLayout());
+        titleBar.setOpaque(false);
+
+        JPanel titleLeft = new JPanel();
+        titleLeft.setLayout(new BoxLayout(titleLeft, BoxLayout.Y_AXIS));
+        titleLeft.setOpaque(false);
+
+        JLabel lblBreadcrumb = new JLabel("KHO LƯU TRỮ TÀI NGUYÊN / QUẢN LÝ BẢN SAO SÁCH (ITEM COPIES)");
+        lblBreadcrumb.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        lblBreadcrumb.setForeground(COLOR_TEXT_MUTED);
+
+        JPanel headingPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        headingPanel.setOpaque(false);
+
+        JLabel lblTitle = new JLabel("Danh Mục Bản Sao Sách");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTitle.setForeground(COLOR_TEXT_DARK);
+
+        lblTotalRecords = new JLabel("Tổng: -- bản sao hiện vật");
+        lblTotalRecords.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblTotalRecords.setForeground(COLOR_TEXT_MUTED);
+        lblTotalRecords.setBorder(new CompoundBorder(
+            new LineBorder(COLOR_BORDER, 1, true),
+            new EmptyBorder(3, 10, 3, 10)
         ));
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 12, 10, 12);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
+        headingPanel.add(lblTitle);
+        headingPanel.add(lblTotalRecords);
 
-        tf_ID_BookCopy = new JTextField();
-        tf_ID_BookCopy.setEditable(false);
-        styleTextField(tf_ID_BookCopy);
+        titleLeft.add(lblBreadcrumb);
+        titleLeft.add(Box.createVerticalStrut(4));
+        titleLeft.add(headingPanel);
 
-        cb_book_BookCopy = new JComboBox<>();
-        cb_book_BookCopy.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        cb_book_BookCopy.setPreferredSize(new Dimension(220, 38));
+        titleBar.add(titleLeft, BorderLayout.WEST);
 
-        cb_published_BookCopy = new JComboBox<>();
-        cb_published_BookCopy.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        cb_published_BookCopy.setPreferredSize(new Dimension(220, 38));
+        topContainer.add(titleBar);
+        topContainer.add(Box.createVerticalStrut(10));
 
-        tf_year_BookCopy = new JTextField();
-        styleTextField(tf_year_BookCopy);
+        add(topContainer, BorderLayout.NORTH);
 
-        gbc.gridx = 0; gbc.gridy = 0; formCard.add(createLabel("Mã Bản Sao (ID):"), gbc);
-        gbc.gridx = 1; formCard.add(tf_ID_BookCopy, gbc);
+        // -------------------------------------------------------------
+        // CENTER MAIN AREA: Left Table Column + Right Form Panel Column
+        // -------------------------------------------------------------
+        JPanel mainContent = new JPanel(new BorderLayout(15, 0));
+        mainContent.setOpaque(false);
 
-        gbc.gridx = 0; gbc.gridy = 1; formCard.add(createLabel("Tên Sách:"), gbc);
-        gbc.gridx = 1; formCard.add(cb_book_BookCopy, gbc);
+        // LEFT COLUMN: Search Bar + Status Filter Chips + JTable + Pagination
+        JPanel leftTablePanel = new JPanel(new BorderLayout(0, 10));
+        leftTablePanel.setOpaque(false);
 
-        gbc.gridx = 0; gbc.gridy = 2; formCard.add(createLabel("Nhà Xuất Bản:"), gbc);
-        gbc.gridx = 1; formCard.add(cb_published_BookCopy, gbc);
+        // Search & Filter Header
+        JPanel searchFilterBar = new JPanel(new BorderLayout(10, 0));
+        searchFilterBar.setBackground(BG_CARD);
+        searchFilterBar.setBorder(new CompoundBorder(
+            new LineBorder(COLOR_BORDER, 1, true),
+            new EmptyBorder(8, 12, 8, 12)
+        ));
 
-        gbc.gridx = 0; gbc.gridy = 3; formCard.add(createLabel("Năm Xuất Bản:"), gbc);
-        gbc.gridx = 1; formCard.add(tf_year_BookCopy, gbc);
+        // Search Input
+        JPanel searchInputPanel = new JPanel(new BorderLayout(6, 0));
+        searchInputPanel.setOpaque(false);
+        JLabel lblSearchIcon = new JLabel("🔍");
+        lblSearchIcon.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
-        JPanel btnPanel = new JPanel(new GridLayout(2, 2, 10, 10));
-        btnPanel.setBorder(BorderFactory.createEmptyBorder(15, 0, 10, 0));
+        tf_search_BookCopy = new JTextField();
+        tf_search_BookCopy.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        tf_search_BookCopy.setBorder(null);
+        tf_search_BookCopy.putClientProperty("JTextField.placeholderText", "Tìm theo Mã BC, Barcode, Tên sách, Kệ sách...");
+        tf_search_BookCopy.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { applyFilter(tf_search_BookCopy.getText()); }
+            @Override public void removeUpdate(DocumentEvent e) { applyFilter(tf_search_BookCopy.getText()); }
+            @Override public void changedUpdate(DocumentEvent e) { applyFilter(tf_search_BookCopy.getText()); }
+        });
 
-        btn_create_BookCopy = createBtn("Thêm Mới", new Color(22, 163, 74), "/images/add.png");
-        btn_create_BookCopy.addActionListener(e -> btn_create_BookCopyActionPerformed());
+        searchInputPanel.add(lblSearchIcon, BorderLayout.WEST);
+        searchInputPanel.add(tf_search_BookCopy, BorderLayout.CENTER);
 
-        btn_update_BookCopy = createBtn("Cập Nhật", new Color(37, 99, 235), "/images/edit.png");
-        btn_update_BookCopy.addActionListener(e -> btn_update_BookCopyActionPerformed());
+        // Filter Chips Panel
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        filterPanel.setOpaque(false);
 
-        btn_delete_BookCopy = createBtn("Xóa", new Color(220, 38, 38), "/images/bin.png");
-        btn_delete_BookCopy.addActionListener(e -> btn_delete_BookCopyActionPerformed());
+        JLabel lblFilterTag = new JLabel("Trạng thái: ");
+        lblFilterTag.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblFilterTag.setForeground(COLOR_TEXT_MUTED);
+        filterPanel.add(lblFilterTag);
 
-        btn_refresh_BookCopy = createBtn("Làm Mới", new Color(75, 85, 99), "/images/refresh.png");
-        btn_refresh_BookCopy.addActionListener(e -> btn_refresh_BookCopyActionPerformed());
+        JButton btnFilterAll = createFilterChip("Tất cả", true);
+        JButton btnFilterAvail = createFilterChip("Khả dụng", false);
+        JButton btnFilterBorrow = createFilterChip("Đang mượn", false);
 
-        btnPanel.add(btn_create_BookCopy);
-        btnPanel.add(btn_update_BookCopy);
-        btnPanel.add(btn_delete_BookCopy);
-        btnPanel.add(btn_refresh_BookCopy);
+        btnFilterAll.addActionListener(e -> applyFilter(""));
+        btnFilterAvail.addActionListener(e -> applyFilter("Khả dụng"));
+        btnFilterBorrow.addActionListener(e -> applyFilter("Đang mượn"));
 
-        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2;
-        formCard.add(btnPanel, gbc);
+        filterPanel.add(btnFilterAll);
+        filterPanel.add(btnFilterAvail);
+        filterPanel.add(btnFilterBorrow);
 
-        JScrollPane formScroll = new JScrollPane(formCard);
-        formScroll.setBorder(null);
-        formScroll.setPreferredSize(new Dimension(420, 500));
-        formScroll.getVerticalScrollBar().setUnitIncrement(16);
-        add(formScroll, BorderLayout.WEST);
+        searchFilterBar.add(searchInputPanel, BorderLayout.CENTER);
+        searchFilterBar.add(filterPanel, BorderLayout.EAST);
 
-        JPanel tablePanel = new JPanel(new BorderLayout(10, 10));
-        JPanel searchBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        
-        JLabel searchIcon = new JLabel();
-        java.net.URL searchImgUrl = getClass().getResource("/images/search_32.png");
-        if (searchImgUrl != null) {
-            searchIcon.setIcon(new ImageIcon(searchImgUrl));
-        } else {
-            searchIcon.setText("🔍");
-            searchIcon.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        }
-        
-        JLabel searchLabel = new JLabel("Tìm Kiếm Bản Sao: ");
-        searchLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        searchLabel.setForeground(new Color(30, 41, 59));
+        leftTablePanel.add(searchFilterBar, BorderLayout.NORTH);
 
-        tf_search_BookCopy = new JTextField(25);
-        styleTextField(tf_search_BookCopy);
-        
-        searchBar.add(searchIcon);
-        searchBar.add(searchLabel);
-        searchBar.add(tf_search_BookCopy);
-
-        tablePanel.add(searchBar, BorderLayout.NORTH);
-
+        // JTable Area
         tbl_BookCopy = new JTable();
         tbl_BookCopy.addMouseListener(new MouseAdapter() {
             @Override
@@ -145,17 +191,286 @@ public class BookCopyManagePanel extends JPanel {
                 tbl_BookCopyMousePressed();
             }
         });
-        sp_BookCopy = new JScrollPane(tbl_BookCopy);
-        tablePanel.add(sp_BookCopy, BorderLayout.CENTER);
 
-        add(tablePanel, BorderLayout.CENTER);
+        sp_BookCopy = new JScrollPane(tbl_BookCopy);
+        sp_BookCopy.setBorder(new LineBorder(COLOR_BORDER, 1, true));
+        sp_BookCopy.getViewport().setBackground(BG_CARD);
+
+        leftTablePanel.add(sp_BookCopy, BorderLayout.CENTER);
+
+        // Pagination / Summary Footer
+        JPanel pageFooter = new JPanel(new BorderLayout());
+        pageFooter.setOpaque(false);
+
+        JLabel lblPaginationInfo = new JLabel("Hiển thị dữ liệu thực tế từ máy chủ RMI Server");
+        lblPaginationInfo.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        lblPaginationInfo.setForeground(COLOR_TEXT_MUTED);
+
+        pageFooter.add(lblPaginationInfo, BorderLayout.WEST);
+        leftTablePanel.add(pageFooter, BorderLayout.SOUTH);
+
+        mainContent.add(leftTablePanel, BorderLayout.CENTER);
+
+        // -------------------------------------------------------------
+        // RIGHT COLUMN: Form Card "Thông Tin Bản Sao Hiện Vật"
+        // -------------------------------------------------------------
+        JPanel rightFormCard = new JPanel(new BorderLayout(0, 12));
+        rightFormCard.setBackground(BG_CARD);
+        rightFormCard.setBorder(new CompoundBorder(
+            new LineBorder(COLOR_BORDER, 1, true),
+            new EmptyBorder(15, 18, 15, 18)
+        ));
+        rightFormCard.setPreferredSize(new Dimension(380, 0));
+
+        // Form Header
+        JPanel formHeader = new JPanel(new BorderLayout());
+        formHeader.setOpaque(false);
+
+        JLabel lblFormTitle = new JLabel("Thông Tin Bản Sao Hiện Vật");
+        lblFormTitle.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        lblFormTitle.setForeground(COLOR_TEXT_DARK);
+
+        JLabel lblBadge = new JLabel("Sẵn Sàng Mượn");
+        lblBadge.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        lblBadge.setForeground(COLOR_GREEN_TEXT);
+        lblBadge.setBackground(COLOR_GREEN_BG);
+        lblBadge.setOpaque(true);
+        lblBadge.setBorder(new EmptyBorder(3, 8, 3, 8));
+
+        formHeader.add(lblFormTitle, BorderLayout.WEST);
+        formHeader.add(lblBadge, BorderLayout.EAST);
+
+        rightFormCard.add(formHeader, BorderLayout.NORTH);
+
+        // Form Inputs (GridBagLayout)
+        JPanel formBody = new JPanel(new GridBagLayout());
+        formBody.setOpaque(false);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(6, 4, 6, 4);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+
+        // Row 0: ID + Barcode
+        tf_ID_BookCopy = new JTextField();
+        tf_ID_BookCopy.setEditable(false);
+        styleFormTextField(tf_ID_BookCopy);
+
+        tf_barcode = new JTextField("AUTO-GEN");
+        tf_barcode.setEditable(false);
+        styleFormTextField(tf_barcode);
+
+        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 1;
+        formBody.add(createFormLabel("Mã Bản Sao (ID)"), gbc);
+        gbc.gridx = 1;
+        formBody.add(createFormLabel("Mã Barcode / Quét"), gbc);
+
+        gbc.gridx = 0; gbc.gridy = 1;
+        formBody.add(tf_ID_BookCopy, gbc);
+        gbc.gridx = 1;
+        formBody.add(tf_barcode, gbc);
+
+        // Row 1: Book Title Dropdown (Full width)
+        cb_book_BookCopy = new JComboBox<>();
+        styleFormComboBox(cb_book_BookCopy);
+
+        gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
+        formBody.add(createFormLabel("Đầu Sách (Title Master) *"), gbc);
+        gbc.gridx = 0; gbc.gridy = 3;
+        formBody.add(cb_book_BookCopy, gbc);
+
+        // Row 2: Shelf / Location + Year
+        tf_shelf = new JTextField("Kệ A2-04 (Tầng 2)");
+        styleFormTextField(tf_shelf);
+
+        tf_year_BookCopy = new JTextField();
+        styleFormTextField(tf_year_BookCopy);
+
+        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 1;
+        formBody.add(createFormLabel("Vị Trí Giá / Kệ Sách"), gbc);
+        gbc.gridx = 1;
+        formBody.add(createFormLabel("Năm Xuất Bản *"), gbc);
+
+        gbc.gridx = 0; gbc.gridy = 5;
+        formBody.add(tf_shelf, gbc);
+        gbc.gridx = 1;
+        formBody.add(tf_year_BookCopy, gbc);
+
+        // Row 3: Publisher + Circulation Policy
+        cb_published_BookCopy = new JComboBox<>();
+        styleFormComboBox(cb_published_BookCopy);
+
+        cb_policy = new JComboBox<>(new String[]{"Cho phép mượn về (14 ngày)", "Đọc tại chỗ"});
+        styleFormComboBox(cb_policy);
+
+        gbc.gridx = 0; gbc.gridy = 6; gbc.gridwidth = 1;
+        formBody.add(createFormLabel("Nhà Xuất Bản"), gbc);
+        gbc.gridx = 1;
+        formBody.add(createFormLabel("Quy Chế Lưu Hành"), gbc);
+
+        gbc.gridx = 0; gbc.gridy = 7;
+        formBody.add(cb_published_BookCopy, gbc);
+        gbc.gridx = 1;
+        formBody.add(cb_policy, gbc);
+
+        // Row 4: Active Checkbox
+        chk_active = new JCheckBox("Kích hoạt lưu hành (Active)", true);
+        chk_active.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        chk_active.setForeground(COLOR_TEXT_DARK);
+        chk_active.setOpaque(false);
+
+        gbc.gridx = 0; gbc.gridy = 8; gbc.gridwidth = 2;
+        formBody.add(chk_active, gbc);
+
+        JScrollPane formScroll = new JScrollPane(formBody);
+        formScroll.setBorder(null);
+        formScroll.setOpaque(false);
+        formScroll.getViewport().setOpaque(false);
+        rightFormCard.add(formScroll, BorderLayout.CENTER);
+
+        // Form Action Buttons Panel
+        JPanel actionButtonsPanel = new JPanel(new GridLayout(2, 2, 8, 8));
+        actionButtonsPanel.setOpaque(false);
+
+        btn_update_BookCopy = createPrimaryButton("Lưu Thay Đổi", COLOR_PRIMARY);
+        btn_update_BookCopy.addActionListener(e -> btn_update_BookCopyActionPerformed());
+
+        btn_create_BookCopy = createSecondaryButton("+ Thêm Bản Sao");
+        btn_create_BookCopy.addActionListener(e -> btn_create_BookCopyActionPerformed());
+
+        btn_refresh_BookCopy = createSecondaryButton("Làm Mới Form");
+        btn_refresh_BookCopy.addActionListener(e -> btn_refresh_BookCopyActionPerformed());
+
+        btn_delete_BookCopy = createDangerButton("Hủy Bản Sao");
+        btn_delete_BookCopy.addActionListener(e -> btn_delete_BookCopyActionPerformed());
+
+        actionButtonsPanel.add(btn_update_BookCopy);
+        actionButtonsPanel.add(btn_create_BookCopy);
+        actionButtonsPanel.add(btn_refresh_BookCopy);
+        actionButtonsPanel.add(btn_delete_BookCopy);
+
+        rightFormCard.add(actionButtonsPanel, BorderLayout.SOUTH);
+
+        mainContent.add(rightFormCard, BorderLayout.EAST);
+
+        add(mainContent, BorderLayout.CENTER);
     }
 
-    private JLabel createLabel(String text) {
+    private JPanel createSingleStatCard(String title, String val1, String val2) {
+        JPanel card = new JPanel(new BorderLayout(10, 6));
+        card.setBackground(BG_CARD);
+        card.setBorder(new CompoundBorder(
+            new LineBorder(COLOR_BORDER, 1, true),
+            new EmptyBorder(12, 16, 12, 16)
+        ));
+        card.setPreferredSize(new Dimension(360, 70));
+
+        JLabel iconLabel = new JLabel("✅");
+        iconLabel.setFont(new Font("Segoe UI", Font.PLAIN, 22));
+
+        JPanel textPanel = new JPanel();
+        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
+        textPanel.setOpaque(false);
+
+        JLabel lblCardTitle = new JLabel(title);
+        lblCardTitle.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        lblCardTitle.setForeground(COLOR_TEXT_MUTED);
+
+        JLabel lblVal1 = new JLabel(val1);
+        lblVal1.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblVal1.setForeground(COLOR_TEXT_DARK);
+
+        JLabel lblVal2 = new JLabel(val2);
+        lblVal2.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        lblVal2.setForeground(new Color(22, 163, 74));
+
+        textPanel.add(lblCardTitle);
+        textPanel.add(lblVal1);
+        textPanel.add(lblVal2);
+
+        card.add(iconLabel, BorderLayout.WEST);
+        card.add(textPanel, BorderLayout.CENTER);
+
+        return card;
+    }
+
+    private JLabel createFormLabel(String text) {
         JLabel lbl = new JLabel(text);
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        lbl.setForeground(new Color(51, 65, 85));
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lbl.setForeground(COLOR_TEXT_DARK);
         return lbl;
+    }
+
+    private void styleFormTextField(JTextField tf) {
+        tf.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        tf.setPreferredSize(new Dimension(140, 34));
+        tf.setBorder(new CompoundBorder(
+            new LineBorder(COLOR_BORDER, 1, true),
+            new EmptyBorder(4, 8, 4, 8)
+        ));
+    }
+
+    private void styleFormComboBox(JComboBox<?> cb) {
+        cb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        cb.setPreferredSize(new Dimension(140, 34));
+        cb.setBackground(Color.WHITE);
+    }
+
+    private JButton createPrimaryButton(String text, Color bg) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btn.setBackground(bg);
+        btn.setForeground(Color.BLACK);
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setPreferredSize(new Dimension(120, 36));
+        return btn;
+    }
+
+    private JButton createSecondaryButton(String text) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btn.setBackground(BG_CARD);
+        btn.setForeground(Color.BLACK);
+        btn.setBorder(new LineBorder(COLOR_BORDER, 1, true));
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setPreferredSize(new Dimension(120, 36));
+        return btn;
+    }
+
+    private JButton createDangerButton(String text) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btn.setBackground(COLOR_DANGER_BG);
+        btn.setForeground(Color.BLACK);
+        btn.setBorder(new LineBorder(new Color(252, 165, 165), 1, true));
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setPreferredSize(new Dimension(120, 36));
+        return btn;
+    }
+
+    private JButton createFilterChip(String text, boolean active) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Segoe UI", active ? Font.BOLD : Font.PLAIN, 12));
+        btn.setBackground(active ? COLOR_PRIMARY : BG_CARD);
+        btn.setForeground(Color.BLACK);
+        btn.setBorder(new LineBorder(active ? COLOR_PRIMARY : COLOR_BORDER, 1, true));
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setMargin(new Insets(2, 10, 2, 10));
+        return btn;
+    }
+
+    private void applyFilter(String text) {
+        if (sorter != null) {
+            if (text == null || text.trim().isEmpty()) {
+                sorter.setRowFilter(null);
+            } else {
+                sorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+            }
+        }
     }
 
     public synchronized void showTableBookCopy() {
@@ -164,27 +479,32 @@ public class BookCopyManagePanel extends JPanel {
             if (response != null && response.getData() instanceof DefaultTableModel) {
                 DefaultTableModel model = (DefaultTableModel) response.getData();
                 sorter = new TableRowSorter<>(model);
+                tbl_BookCopy.setModel(model);
                 tbl_BookCopy.setRowSorter(sorter);
 
-                tf_search_BookCopy.getDocument().addDocumentListener(new DocumentListener() {
-                    @Override public void insertUpdate(DocumentEvent e) { search(tf_search_BookCopy.getText()); }
-                    @Override public void removeUpdate(DocumentEvent e) { search(tf_search_BookCopy.getText()); }
-                    @Override public void changedUpdate(DocumentEvent e) { search(tf_search_BookCopy.getText()); }
+                // Apply active search text filter if any
+                String searchStr = tf_search_BookCopy.getText();
+                if (searchStr != null && !searchStr.trim().isEmpty()) {
+                    sorter.setRowFilter(RowFilter.regexFilter("(?i)" + searchStr));
+                }
 
-                    private void search(String str) {
-                        if (str.length() == 0) sorter.setRowFilter(null);
-                        else sorter.setRowFilter(RowFilter.regexFilter("(?i)" + str));
-                    }
-                });
-
-                tbl_BookCopy.setModel(model);
                 tbl_BookCopy.getTableHeader().setDefaultRenderer(new CustomHeaderRenderer());
                 tbl_BookCopy.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-                tbl_BookCopy.setRowHeight(34);
+                tbl_BookCopy.setRowHeight(36);
+                tbl_BookCopy.setSelectionBackground(new Color(224, 242, 254));
+                tbl_BookCopy.setSelectionForeground(COLOR_TEXT_DARK);
                 tbl_BookCopy.setDefaultEditor(Object.class, null);
-                TableColumn indexColumn = tbl_BookCopy.getColumnModel().getColumn(0);
-                indexColumn.setCellRenderer(new CenteredTableCellRenderer());
-                indexColumn.setMaxWidth(80);
+
+                if (tbl_BookCopy.getColumnCount() > 0) {
+                    TableColumn indexColumn = tbl_BookCopy.getColumnModel().getColumn(0);
+                    indexColumn.setCellRenderer(new CenteredTableCellRenderer());
+                    indexColumn.setMaxWidth(80);
+                }
+
+                if (lblTotalRecords != null) {
+                    lblTotalRecords.setText("Tổng: " + model.getRowCount() + " bản sao hiện vật");
+                }
+
                 sp_BookCopy.setViewportView(tbl_BookCopy);
             }
         } catch (RemoteException e) {
@@ -224,7 +544,9 @@ public class BookCopyManagePanel extends JPanel {
             int modelRow = tbl_BookCopy.convertRowIndexToModel(selectedRow);
             DefaultTableModel model = (DefaultTableModel) tbl_BookCopy.getModel();
 
-            tf_ID_BookCopy.setText(String.valueOf(model.getValueAt(modelRow, 0)));
+            String idVal = String.valueOf(model.getValueAt(modelRow, 0));
+            tf_ID_BookCopy.setText(idVal);
+            tf_barcode.setText("BC-00" + idVal);
             tf_year_BookCopy.setText(String.valueOf(model.getValueAt(modelRow, 2)));
 
             String bookTitle = String.valueOf(model.getValueAt(modelRow, 1));
@@ -325,33 +647,10 @@ public class BookCopyManagePanel extends JPanel {
 
     private void btn_refresh_BookCopyActionPerformed() {
         tf_ID_BookCopy.setText("");
+        tf_barcode.setText("AUTO-GEN");
         tf_year_BookCopy.setText("");
         if (cb_book_BookCopy.getItemCount() > 0) cb_book_BookCopy.setSelectedIndex(0);
         if (cb_published_BookCopy.getItemCount() > 0) cb_published_BookCopy.setSelectedIndex(0);
         showTableBookCopy();
-    }
-
-    private JButton createBtn(String text, Color bg, String iconPath) {
-        JButton btn = new JButton(text);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btn.setBackground(bg);
-        btn.setForeground(Color.WHITE);
-        btn.setFocusPainted(false);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setPreferredSize(new Dimension(130, 40));
-        
-        if (iconPath != null) {
-            java.net.URL imgUrl = getClass().getResource(iconPath);
-            if (imgUrl != null) {
-                btn.setIcon(new ImageIcon(imgUrl));
-            }
-        }
-        return btn;
-    }
-
-    private void styleTextField(JTextField tf) {
-        tf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        tf.setPreferredSize(new Dimension(220, 38));
-        tf.setMargin(new Insets(4, 8, 4, 8));
     }
 }

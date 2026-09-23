@@ -1,6 +1,8 @@
 package patron;
 
-import common.*;
+import common.model.*;
+import common.rmi.*;
+import common.chat.*;
 import admin.ManageGUI;
 import javax.swing.*;
 import java.rmi.RemoteException;
@@ -115,7 +117,7 @@ public class LoginGUI extends javax.swing.JFrame {
                 boolean isAdmin = (role != null && role.equalsIgnoreCase("ADMIN")) || (email != null && email.equalsIgnoreCase("admin@library.com"));
                 if (isAdmin) {
                     JOptionPane.showMessageDialog(this, "Welcome Admin/Librarian: " + patron.getFirstName() + " " + patron.getLastName(), "Notification", JOptionPane.INFORMATION_MESSAGE);
-                    new ManageGUI().setVisible(true);
+                    new ManageGUI(patron).setVisible(true);
                 } else {
                     JOptionPane.showMessageDialog(this, "Welcome Back! " + patron.getFirstName(), "Notification", JOptionPane.INFORMATION_MESSAGE);
                     new ClientGUI(patron).setVisible(true);
@@ -174,3 +176,4 @@ public class LoginGUI extends javax.swing.JFrame {
     private javax.swing.JPasswordField tf_password;
     // End of variables declaration
 }
+
