@@ -24,18 +24,40 @@ public class HomePagePanel extends JPanel {
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout());
-        setBackground(UIStyleHelper.COLOR_BG_LIGHT);
-        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        setLayout(new BorderLayout(0, 15));
+        setBackground(UIStyleHelper.COLOR_BG_MAIN);
+        setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
 
-        JPanel cardContainer = UIStyleHelper.createCardPanel("Trung Tâm Thông Báo (Notification Center)");
+        // Top Notice Banner matching VKU Daotao
+        JPanel noticeBanner = UIStyleHelper.createNoticeBanner(
+                "Bạn có thể xem các thông báo mới nhất từ Hệ thống Thư viện VKU. Mọi thắc mắc vui lòng liên hệ Thủ thư qua kênh Trò chuyện & File."
+        );
+        add(noticeBanner, BorderLayout.NORTH);
+
+        // Main Card Container
+        JPanel mainCard = new JPanel(new BorderLayout());
+        mainCard.setBackground(Color.WHITE);
+        mainCard.setBorder(BorderFactory.createLineBorder(UIStyleHelper.COLOR_BORDER, 1, true));
+
+        // Section Banner (Teal bar matching VKU Daotao screenshot)
+        JPanel sectionHeader = UIStyleHelper.createSectionHeaderBar(
+                "Lịch thông báo & Cập nhật hôm nay", UIStyleHelper.COLOR_TEAL_HEADER
+        );
+        mainCard.add(sectionHeader, BorderLayout.NORTH);
+
+        // Table Content
+        JPanel tableContentPanel = new JPanel(new BorderLayout());
+        tableContentPanel.setOpaque(false);
+        tableContentPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
         tbl_Notification = new JTable();
         sp_Notification = new JScrollPane(tbl_Notification);
         UIStyleHelper.styleTable(tbl_Notification, sp_Notification);
 
-        cardContainer.add(sp_Notification, BorderLayout.CENTER);
-        add(cardContainer, BorderLayout.CENTER);
+        tableContentPanel.add(sp_Notification, BorderLayout.CENTER);
+        mainCard.add(tableContentPanel, BorderLayout.CENTER);
+
+        add(mainCard, BorderLayout.CENTER);
     }
 
     public void showNotification() {
@@ -57,3 +79,4 @@ public class HomePagePanel extends JPanel {
         }
     }
 }
+

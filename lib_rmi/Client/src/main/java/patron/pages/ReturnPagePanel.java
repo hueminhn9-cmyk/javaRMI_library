@@ -37,18 +37,32 @@ public class ReturnPagePanel extends JPanel {
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout());
-        setBackground(UIStyleHelper.COLOR_BG_LIGHT);
-        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        setLayout(new BorderLayout(0, 15));
+        setBackground(UIStyleHelper.COLOR_BG_MAIN);
+        setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
+
+        // Top Notice Banner
+        JPanel noticeBanner = UIStyleHelper.createNoticeBanner(
+                "Danh sách bên dưới liệt kê tất cả sách bạn đang mượn. Vui lòng kiểm tra hạn trả và thực hiện trả sách đúng quy định."
+        );
+        add(noticeBanner, BorderLayout.NORTH);
 
         // Left Panel: Ticket Detail Card
-        JPanel leftCard = UIStyleHelper.createCardPanel("Chi Tiết Phiếu Mượn");
+        JPanel leftCard = new JPanel(new BorderLayout());
+        leftCard.setBackground(Color.WHITE);
+        leftCard.setBorder(BorderFactory.createLineBorder(UIStyleHelper.COLOR_BORDER, 1, true));
         leftCard.setPreferredSize(new Dimension(380, 0));
+
+        // Section Banner Orange
+        JPanel leftSectionHeader = UIStyleHelper.createSectionHeaderBar(
+                "Chi tiết phiếu mượn", UIStyleHelper.COLOR_ORANGE_HEADER
+        );
+        leftCard.add(leftSectionHeader, BorderLayout.NORTH);
 
         JPanel detailContainer = new JPanel();
         detailContainer.setLayout(new BoxLayout(detailContainer, BoxLayout.Y_AXIS));
         detailContainer.setOpaque(false);
-        detailContainer.setBorder(BorderFactory.createEmptyBorder(10, 5, 10, 5));
+        detailContainer.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         detailContainer.add(createDetailRow("Tên sách:", lb_BookName_Return = new JLabel("-")));
         detailContainer.add(Box.createVerticalStrut(15));
@@ -57,25 +71,34 @@ public class ReturnPagePanel extends JPanel {
         detailContainer.add(createDetailRow("Hạn trả:", lb_Return_TimeEnd = new JLabel("-")));
         detailContainer.add(Box.createVerticalStrut(25));
 
-        btn_Return = new JButton("Trả sách");
-        ImageIcon returnIcon = UIStyleHelper.getIcon("/images/refresh.png", 16, 16);
-        if (returnIcon != null) btn_Return.setIcon(returnIcon);
-        UIStyleHelper.styleButton(btn_Return, UIStyleHelper.COLOR_SUCCESS_BG, UIStyleHelper.COLOR_SUCCESS_BORDER, Color.BLACK);
+        btn_Return = UIStyleHelper.createTealPillButton("Xác nhận trả sách", UIStyleHelper.getIcon("/images/refresh.png", 16, 16));
         btn_Return.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btn_Return.setMaximumSize(new Dimension(220, 40));
+        btn_Return.setMaximumSize(new Dimension(220, 42));
         btn_Return.addActionListener(e -> btn_ReturnActionPerformed(e));
         detailContainer.add(btn_Return);
 
-        leftCard.add(detailContainer, BorderLayout.NORTH);
+        leftCard.add(detailContainer, BorderLayout.CENTER);
 
         // Right Panel: Search & Table Card
-        JPanel rightCard = UIStyleHelper.createCardPanel("Danh Sách Sách Đang Mượn");
+        JPanel rightCard = new JPanel(new BorderLayout());
+        rightCard.setBackground(Color.WHITE);
+        rightCard.setBorder(BorderFactory.createLineBorder(UIStyleHelper.COLOR_BORDER, 1, true));
+
+        // Section Banner Teal
+        JPanel rightSectionHeader = UIStyleHelper.createSectionHeaderBar(
+                "Danh sách sách đang mượn", UIStyleHelper.COLOR_TEAL_HEADER
+        );
+        rightCard.add(rightSectionHeader, BorderLayout.NORTH);
+
+        JPanel rightContentPanel = new JPanel(new BorderLayout());
+        rightContentPanel.setOpaque(false);
+        rightContentPanel.setBorder(BorderFactory.createEmptyBorder(12, 15, 15, 15));
 
         JPanel searchBarPanel = new JPanel(new BorderLayout(8, 0));
         searchBarPanel.setOpaque(false);
         searchBarPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 12, 0));
 
-        JLabel lblSearch = new JLabel("Tìm kiếm:");
+        JLabel lblSearch = new JLabel("Tìm kiếm phiếu:");
         ImageIcon searchIcon = UIStyleHelper.getIcon("/images/search.png", 16, 16);
         if (searchIcon != null) lblSearch.setIcon(searchIcon);
         lblSearch.setFont(UIStyleHelper.FONT_BODY_BOLD);
@@ -97,14 +120,16 @@ public class ReturnPagePanel extends JPanel {
         sp_Profile = new JScrollPane(tbl_Profile);
         UIStyleHelper.styleTable(tbl_Profile, sp_Profile);
 
-        rightCard.add(searchBarPanel, BorderLayout.NORTH);
-        rightCard.add(sp_Profile, BorderLayout.CENTER);
+        rightContentPanel.add(searchBarPanel, BorderLayout.NORTH);
+        rightContentPanel.add(sp_Profile, BorderLayout.CENTER);
+
+        rightCard.add(rightContentPanel, BorderLayout.CENTER);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftCard, rightCard);
         splitPane.setResizeWeight(0.35);
         splitPane.setDividerSize(8);
         splitPane.setBorder(null);
-        splitPane.setBackground(UIStyleHelper.COLOR_BG_LIGHT);
+        splitPane.setBackground(UIStyleHelper.COLOR_BG_MAIN);
 
         add(splitPane, BorderLayout.CENTER);
     }
@@ -204,3 +229,4 @@ public class ReturnPagePanel extends JPanel {
         }
     }
 }
+

@@ -27,15 +27,30 @@ public class ProfilePagePanel extends JPanel {
     }
 
     private void initComponents() {
-        setLayout(new GridBagLayout());
-        setBackground(UIStyleHelper.COLOR_BG_LIGHT);
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setLayout(new BorderLayout(0, 15));
+        setBackground(UIStyleHelper.COLOR_BG_MAIN);
+        setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
 
-        JPanel card = UIStyleHelper.createCardPanel("Thông Tin Cá Nhân");
-        card.setPreferredSize(new Dimension(520, 380));
+        // Top Notice Banner
+        JPanel noticeBanner = UIStyleHelper.createNoticeBanner(
+                "Bạn có thể kiểm tra và cập nhật Họ tên, Email và Mật khẩu cá nhân cho tài khoản độc giả Thư viện VKU."
+        );
+        add(noticeBanner, BorderLayout.NORTH);
+
+        // Center Profile Card
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createLineBorder(UIStyleHelper.COLOR_BORDER, 1, true));
+
+        // Section Banner Teal
+        JPanel sectionHeader = UIStyleHelper.createSectionHeaderBar(
+                "Thông tin tài khoản độc giả", UIStyleHelper.COLOR_TEAL_HEADER
+        );
+        card.add(sectionHeader, BorderLayout.NORTH);
 
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setOpaque(false);
+        formPanel.setBorder(BorderFactory.createEmptyBorder(25, 30, 25, 30));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -78,7 +93,7 @@ public class ProfilePagePanel extends JPanel {
 
         // Password
         gbc.gridx = 0; gbc.gridy = 3; gbc.weightx = 0.3;
-        JLabel lblPassword = new JLabel("Mật khẩu:");
+        JLabel lblPassword = new JLabel("Mật khẩu mới:");
         lblPassword.setFont(UIStyleHelper.FONT_BODY_BOLD);
         lblPassword.setForeground(UIStyleHelper.COLOR_TEXT_MAIN);
         formPanel.add(lblPassword, gbc);
@@ -94,20 +109,22 @@ public class ProfilePagePanel extends JPanel {
 
         // Save Button
         gbc.gridx = 1; gbc.gridy = 4; gbc.weightx = 1.0;
-        btn_Save = new JButton("Lưu thay đổi");
-        ImageIcon saveIcon = UIStyleHelper.getIcon("/images/changes.png", 16, 16);
-        if (saveIcon != null) btn_Save.setIcon(saveIcon);
-        UIStyleHelper.styleButton(btn_Save, UIStyleHelper.COLOR_PRIMARY_BG, UIStyleHelper.COLOR_PRIMARY_BORDER, Color.BLACK);
+        gbc.insets = new Insets(18, 10, 10, 10);
+        btn_Save = UIStyleHelper.createTealPillButton("Lưu thay đổi", UIStyleHelper.getIcon("/images/changes.png", 16, 16));
         btn_Save.addActionListener(e -> btn_SaveActionPerformed(e));
         formPanel.add(btn_Save, gbc);
 
         card.add(formPanel, BorderLayout.CENTER);
 
+        JPanel outerCenter = new JPanel(new GridBagLayout());
+        outerCenter.setOpaque(false);
         GridBagConstraints cardGbc = new GridBagConstraints();
         cardGbc.gridx = 0;
         cardGbc.gridy = 0;
         cardGbc.anchor = GridBagConstraints.CENTER;
-        add(card, cardGbc);
+        outerCenter.add(card, cardGbc);
+
+        add(outerCenter, BorderLayout.CENTER);
     }
 
     private void loadPatronInfo() {
@@ -147,3 +164,4 @@ public class ProfilePagePanel extends JPanel {
         }
     }
 }
+

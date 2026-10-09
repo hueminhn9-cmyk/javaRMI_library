@@ -4,13 +4,17 @@ import admin.pages.*;
 import chat.ChatPanel;
 import common.model.*;
 import common.rmi.*;
+import patron.UIStyleHelper;
 
 import javax.swing.*;
+import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ManageGUI extends JFrame {
     class ClientImpl extends UnicastRemoteObject implements ClientInterface {
@@ -63,8 +67,14 @@ public class ManageGUI extends JFrame {
     private HoldManagePanel holdManagePanel;
     private NotifyManagePanel notifyManagePanel;
     private HistoryLogPanel historyLogPanel;
+    private ChatPanel chatPanel;
 
-    private JTabbedPane mainTabPane;
+    private JPanel mainCardContainer;
+    private CardLayout cardLayout;
+
+    private List<UIStyleHelper.SidebarNavButton> navButtons = new ArrayList<>();
+    private JPanel sidebarNavPanel;
+    private int currentSelectedIndex = -1;
 
     public ManageGUI() {
         this((Patron) null);
@@ -112,109 +122,186 @@ public class ManageGUI extends JFrame {
         setLayout(new BorderLayout());
 
         // Dynamic User Profile calculation
-        String nameDisplay = "Nguyễn Văn An";
-        String initials = "VA";
+        String nameDisplay = "NGUYỄN VĂN AN";
         String roleDisplay = "Thủ thư • QTV Kho Sách";
 
         if (loggedUser != null) {
             String firstName = loggedUser.getFirstName() != null ? loggedUser.getFirstName().trim() : "";
             String lastName = loggedUser.getLastName() != null ? loggedUser.getLastName().trim() : "";
             if (!firstName.isEmpty() || !lastName.isEmpty()) {
-                nameDisplay = (firstName + " " + lastName).trim();
+                nameDisplay = (firstName + " " + lastName).trim().toUpperCase();
             } else if (loggedUser.getEmail() != null && !loggedUser.getEmail().isEmpty()) {
-                nameDisplay = loggedUser.getEmail();
+                nameDisplay = loggedUser.getEmail().toUpperCase();
             }
             if (loggedUser.getRole() != null && !loggedUser.getRole().isEmpty()) {
                 roleDisplay = loggedUser.getRole() + " • Thủ thư";
             }
         } else if (customUsername != null && !customUsername.trim().isEmpty()) {
-            nameDisplay = customUsername.trim();
+            nameDisplay = customUsername.trim().toUpperCase();
         }
 
-        // Calculate Initials for Avatar
-        String[] nameParts = nameDisplay.split("\\s+");
-        if (nameParts.length >= 2) {
-            initials = ("" + nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
-        } else if (nameParts.length == 1 && nameParts[0].length() >= 1) {
-            initials = nameParts[0].substring(0, Math.min(2, nameParts[0].length())).toUpperCase();
-        }
+        // 1. LEFT SIDEBAR NAVIGATION (VKU Daotao Style)
+        JPanel leftSidebar = new JPanel(new BorderLayout());
+        leftSidebar.setPreferredSize(new Dimension(250, 0));
+        leftSidebar.setBackground(UIStyleHelper.COLOR_NAVBAR_BG);
 
-        // Header Top Panel matching mock-up
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(Color.WHITE);
-        topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(226, 232, 240)));
+        // Sidebar Top: Brand Logo & Admin Greeting Card
+        JPanel sidebarTop = new JPanel();
+        sidebarTop.setLayout(new BoxLayout(sidebarTop, BoxLayout.Y_AXIS));
+        sidebarTop.setOpaque(false);
 
-        // Header Bar Top Row
+        // Brand Logo Box
+        JPanel brandBox = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 15));
+        brandBox.setOpaque(false);
+
+        JLabel logoIcon = new JLabel();
+        ImageIcon libIcon = UIStyleHelper.getIcon("/images/library.png", 26, 26);
+        if (libIcon != null) logoIcon.setIcon(libIcon);
+        else logoIcon.setText("🏛️");
+
+        JLabel brandTitle = new JLabel("VKU!");
+        brandTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        brandTitle.setForeground(Color.WHITE);
+
+        brandBox.add(logoIcon);
+        brandBox.add(brandTitle);
+        sidebarTop.add(brandBox);
+
+        // User Greeting Card (matching VKU Daotao screenshot)
+        JPanel userGreetingCard = new JPanel();
+        userGreetingCard.setLayout(new BoxLayout(userGreetingCard, BoxLayout.Y_AXIS));
+        userGreetingCard.setOpaque(false);
+        userGreetingCard.setBorder(BorderFactory.createEmptyBorder(6, 20, 12, 20));
+
+        JLabel lblGreeting = new JLabel("Xin chào,");
+        lblGreeting.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblGreeting.setForeground(new Color(148, 163, 184)); // Slate gray
+
+        JLabel lblUserName = new JLabel(nameDisplay);
+        lblUserName.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblUserName.setForeground(Color.WHITE);
+
+        JLabel lblStatus = new JLabel("● Online (" + roleDisplay + ")");
+        lblStatus.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        lblStatus.setForeground(new Color(34, 197, 94)); // Green status
+
+        userGreetingCard.add(lblGreeting);
+        userGreetingCard.add(Box.createVerticalStrut(3));
+        userGreetingCard.add(lblUserName);
+        userGreetingCard.add(Box.createVerticalStrut(3));
+        userGreetingCard.add(lblStatus);
+
+        sidebarTop.add(userGreetingCard);
+
+        // Navigation Group Label
+        JLabel navHeaderLabel = new JLabel("QUẢN TRỊ THƯ VIỆN");
+        navHeaderLabel.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        navHeaderLabel.setForeground(new Color(148, 163, 184));
+        navHeaderLabel.setBorder(BorderFactory.createEmptyBorder(8, 20, 6, 20));
+        sidebarTop.add(navHeaderLabel);
+
+        leftSidebar.add(sidebarTop, BorderLayout.NORTH);
+
+        // Scrollable Sidebar Navigation Menu
+        sidebarNavPanel = new JPanel();
+        sidebarNavPanel.setLayout(new BoxLayout(sidebarNavPanel, BoxLayout.Y_AXIS));
+        sidebarNavPanel.setOpaque(false);
+        sidebarNavPanel.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
+
+        // Create Navigation Items with Clean PNG Icons
+        addNavButton("Đầu sách (Titles)", UIStyleHelper.getIcon("/images/book.png", 18, 18), 0);
+        addNavButton("Bản sao sách", UIStyleHelper.getIcon("/images/stack-of-books.png", 18, 18), 1);
+        addNavButton("Mượn / Trả (Circulation)", UIStyleHelper.getIcon("/images/checked.png", 18, 18), 2);
+        addNavButton("Quản lý độc giả", UIStyleHelper.getIcon("/images/user (1).png", 18, 18), 3);
+        addNavButton("Danh mục Tác giả/Thể loại", UIStyleHelper.getIcon("/images/online-library.png", 18, 18), 4);
+        addNavButton("Đặt giữ sách (Holds)", UIStyleHelper.getIcon("/images/reading_24.png", 18, 18), 5);
+        addNavButton("Thông báo hệ thống", UIStyleHelper.getIcon("/images/notification.png", 18, 18), 6);
+        addNavButton("Lịch sử nhật ký", UIStyleHelper.getIcon("/images/history.png", 18, 18), 7);
+        addNavButton("Chat & Share file", UIStyleHelper.getIcon("/images/paper-plane.png", 18, 18), 8);
+
+        JScrollPane sidebarScroll = new JScrollPane(sidebarNavPanel);
+        sidebarScroll.setOpaque(false);
+        sidebarScroll.getViewport().setOpaque(false);
+        sidebarScroll.setBorder(null);
+        sidebarScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        leftSidebar.add(sidebarScroll, BorderLayout.CENTER);
+
+        // Sidebar Bottom Toolbar
+        JPanel sidebarFooter = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 8));
+        sidebarFooter.setOpaque(false);
+        sidebarFooter.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(44, 62, 80)));
+
+        JButton btnSettings = createIconButton("Cài đặt", UIStyleHelper.getIcon("/images/setting.png", 16, 16));
+        JButton btnRefresh = createIconButton("Làm mới", UIStyleHelper.getIcon("/images/refresh.png", 16, 16));
+        btnRefresh.addActionListener(e -> {
+            if (bookCopyManagePanel != null) bookCopyManagePanel.showTableBookCopy();
+            if (checkoutManagePanel != null) checkoutManagePanel.showTableCheckout();
+        });
+
+        JButton btnLogout = createIconButton("Đăng xuất", UIStyleHelper.getIcon("/images/exit.png", 16, 16));
+        btnLogout.addActionListener(e -> {
+            this.dispose();
+            new patron.LoginGUI().setVisible(true);
+        });
+
+        sidebarFooter.add(btnSettings);
+        sidebarFooter.add(btnRefresh);
+        sidebarFooter.add(btnLogout);
+
+        leftSidebar.add(sidebarFooter, BorderLayout.SOUTH);
+
+        add(leftSidebar, BorderLayout.WEST);
+
+        // 2. RIGHT CONTAINER (Top Header Bar + Main View Panels)
+        JPanel rightContainer = new JPanel(new BorderLayout());
+        rightContainer.setBackground(UIStyleHelper.COLOR_BG_MAIN);
+
+        // Top Header Bar
         JPanel headerBar = new JPanel(new BorderLayout());
-        headerBar.setBackground(Color.WHITE);
-        headerBar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        headerBar.setBackground(UIStyleHelper.COLOR_HEADER_BG);
+        headerBar.setPreferredSize(new Dimension(0, 52));
+        headerBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(226, 232, 240)));
 
-        // Left Section: App Logo + Title + Badges
-        JPanel headerLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        // Header Left: Hamburger Toggle + System Title
+        JPanel headerLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 12));
         headerLeft.setOpaque(false);
 
-        JLabel logoLabel = new JLabel("📚");
-        logoLabel.setFont(new Font("Segoe UI", Font.PLAIN, 24));
+        JLabel btnToggleSidebar = new JLabel("☰");
+        btnToggleSidebar.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        btnToggleSidebar.setForeground(new Color(71, 85, 105));
+        btnToggleSidebar.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        JLabel titleLabel = new JLabel("VKU LIBRARY MANAGEMENT");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 17));
+        JLabel titleLabel = new JLabel("VKU LIBRARY MANAGEMENT SYSTEM - ADMIN DASHBOARD");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 15));
         titleLabel.setForeground(new Color(30, 41, 59));
 
-        JLabel badgeVer = new JLabel("Enterprise v2.4");
-        badgeVer.setFont(new Font("Segoe UI", Font.BOLD, 11));
-        badgeVer.setForeground(new Color(37, 99, 235));
-        badgeVer.setBackground(new Color(224, 242, 254));
-        badgeVer.setOpaque(true);
-        badgeVer.setBorder(BorderFactory.createEmptyBorder(3, 8, 3, 8));
+        headerLeft.add(btnToggleSidebar);
+        headerLeft.add(titleLabel);
 
-        JLabel badgeDb = new JLabel("● CSDL: Sẵn sàng");
+        headerBar.add(headerLeft, BorderLayout.WEST);
+
+        // Header Right: Status Badge & User Info
+        JPanel headerRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 10));
+        headerRight.setOpaque(false);
+
+        JLabel badgeDb = new JLabel("● CSDL: Ready");
         badgeDb.setFont(new Font("Segoe UI", Font.BOLD, 11));
         badgeDb.setForeground(new Color(22, 101, 52));
         badgeDb.setBackground(new Color(220, 252, 231));
         badgeDb.setOpaque(true);
         badgeDb.setBorder(BorderFactory.createEmptyBorder(3, 8, 3, 8));
 
-        headerLeft.add(logoLabel);
-        headerLeft.add(titleLabel);
-        headerLeft.add(badgeVer);
-        headerLeft.add(badgeDb);
+        JLabel userBadge = new JLabel("👤 " + nameDisplay);
+        userBadge.setFont(UIStyleHelper.FONT_BODY_BOLD);
+        userBadge.setForeground(new Color(30, 41, 59));
 
-        // Right Section: Dynamic User Profile Badge
-        JPanel headerRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        headerRight.setOpaque(false);
+        headerRight.add(badgeDb);
+        headerRight.add(userBadge);
 
-        JLabel userAvatar = new JLabel(initials);
-        userAvatar.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        userAvatar.setForeground(new Color(37, 99, 235));
-        userAvatar.setBackground(new Color(224, 242, 254));
-        userAvatar.setOpaque(true);
-        userAvatar.setPreferredSize(new Dimension(32, 32));
-        userAvatar.setHorizontalAlignment(SwingConstants.CENTER);
-
-        JPanel userInfo = new JPanel();
-        userInfo.setLayout(new BoxLayout(userInfo, BoxLayout.Y_AXIS));
-        userInfo.setOpaque(false);
-
-        JLabel userName = new JLabel(nameDisplay);
-        userName.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        userName.setForeground(new Color(30, 41, 59));
-
-        JLabel userRole = new JLabel(roleDisplay);
-        userRole.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        userRole.setForeground(new Color(100, 116, 139));
-
-        userInfo.add(userName);
-        userInfo.add(userRole);
-
-        headerRight.add(userAvatar);
-        headerRight.add(userInfo);
-
-        headerBar.add(headerLeft, BorderLayout.WEST);
         headerBar.add(headerRight, BorderLayout.EAST);
 
-        topPanel.add(headerBar, BorderLayout.CENTER);
-
-        add(topPanel, BorderLayout.NORTH);
+        rightContainer.add(headerBar, BorderLayout.NORTH);
 
         // Initialize Admin Panels
         bookManagePanel = new BookManagePanel(controller);
@@ -228,56 +315,94 @@ public class ManageGUI extends JFrame {
         holdManagePanel = new HoldManagePanel(controller);
         notifyManagePanel = new NotifyManagePanel(controller);
         historyLogPanel = new HistoryLogPanel(controller);
-        ChatPanel chatPanel = new ChatPanel("Admin");
+        chatPanel = new ChatPanel("Admin");
 
-        // Main Tabbed Pane at TOP
-        mainTabPane = new JTabbedPane();
-        mainTabPane.setTabPlacement(JTabbedPane.TOP);
-        mainTabPane.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        mainTabPane.setBackground(Color.WHITE);
+        cardLayout = new CardLayout();
+        mainCardContainer = new JPanel(cardLayout);
+        mainCardContainer.setBackground(UIStyleHelper.COLOR_BG_MAIN);
 
-        mainTabPane.addTab("Đầu Sách (Titles)", getResourceIcon("/images/book.png"), bookManagePanel);
-        mainTabPane.addTab("Bản Sao Sách", getResourceIcon("/images/stack-of-books.png"), bookCopyManagePanel);
-        mainTabPane.addTab("Mượn / Trả (Circulation)", getResourceIcon("/images/checked.png"), checkoutManagePanel);
-        mainTabPane.addTab("Độc Giả (Patrons)", getResourceIcon("/images/user (1).png"), patronManagePanel);
-        mainTabPane.addTab("Danh Mục (Tác Giả / Thể Loại / NXB)", getResourceIcon("/images/online-library.png"), masterDataPanel);
-        mainTabPane.addTab("Đặt Giữ Sách", getResourceIcon("/images/reading_24.png"), holdManagePanel);
-        mainTabPane.addTab("Thông Báo System", getResourceIcon("/images/notification.png"), notifyManagePanel);
-        mainTabPane.addTab("Lịch Sử Log", getResourceIcon("/images/history.png"), historyLogPanel);
-        mainTabPane.addTab("Chat & Share File TCP", getResourceIcon("/images/paper-plane.png"), chatPanel);
+        mainCardContainer.add(bookManagePanel, "BOOK");
+        mainCardContainer.add(bookCopyManagePanel, "BOOK_COPY");
+        mainCardContainer.add(checkoutManagePanel, "CHECKOUT");
+        mainCardContainer.add(patronManagePanel, "PATRON");
+        mainCardContainer.add(masterDataPanel, "MASTER");
+        mainCardContainer.add(holdManagePanel, "HOLD");
+        mainCardContainer.add(notifyManagePanel, "NOTIFY");
+        mainCardContainer.add(historyLogPanel, "HISTORY");
+        mainCardContainer.add(chatPanel, "CHAT");
 
-        // Default open to "Bản Sao Sách" tab as requested
-        mainTabPane.setSelectedIndex(1);
+        rightContainer.add(mainCardContainer, BorderLayout.CENTER);
 
-        add(mainTabPane, BorderLayout.CENTER);
-
-        // Footer Bar
+        // Footer Bar matching VKU Daotao
         JPanel footerBar = new JPanel(new BorderLayout());
         footerBar.setBackground(Color.WHITE);
         footerBar.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(226, 232, 240)),
-            BorderFactory.createEmptyBorder(6, 20, 6, 20)
+                BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(226, 232, 240)),
+                BorderFactory.createEmptyBorder(6, 20, 6, 20)
         ));
 
         JLabel footerLeft = new JLabel("Trường Đại học Công nghệ Thông tin và Truyền thông Việt - Hàn (VKU)");
         footerLeft.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         footerLeft.setForeground(new Color(100, 116, 139));
 
-        JLabel footerRight = new JLabel("Phiên bản Desktop Web 2.4.0 • Hỗ trợ kỹ thuật");
+        JLabel footerRight = new JLabel("Phiên bản VKU Library 2026-2027 • Hỗ trợ kỹ thuật");
         footerRight.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         footerRight.setForeground(new Color(100, 116, 139));
 
         footerBar.add(footerLeft, BorderLayout.WEST);
         footerBar.add(footerRight, BorderLayout.EAST);
 
-        add(footerBar, BorderLayout.SOUTH);
+        rightContainer.add(footerBar, BorderLayout.SOUTH);
+
+        add(rightContainer, BorderLayout.CENTER);
+
+        // Default open to "Bản sao sách" (index 1)
+        selectNavTab(1);
     }
 
-    private ImageIcon getResourceIcon(String path) {
-        try {
-            java.net.URL url = getClass().getResource(path);
-            if (url != null) return new ImageIcon(url);
-        } catch (Exception ignored) {}
-        return null;
+    private void addNavButton(String text, Icon icon, int index) {
+        UIStyleHelper.SidebarNavButton btn = new UIStyleHelper.SidebarNavButton(text, icon);
+        btn.setMaximumSize(new Dimension(250, 42));
+        btn.setPreferredSize(new Dimension(250, 42));
+        btn.addActionListener(e -> selectNavTab(index));
+
+        navButtons.add(btn);
+        sidebarNavPanel.add(btn);
+        sidebarNavPanel.add(Box.createVerticalStrut(2));
+    }
+
+    private void selectNavTab(int index) {
+        if (index < 0 || index >= navButtons.size()) return;
+        currentSelectedIndex = index;
+
+        for (int i = 0; i < navButtons.size(); i++) {
+            UIStyleHelper.SidebarNavButton b = navButtons.get(i);
+            b.setActive(i == index);
+        }
+
+        switch (index) {
+            case 0 -> cardLayout.show(mainCardContainer, "BOOK");
+            case 1 -> cardLayout.show(mainCardContainer, "BOOK_COPY");
+            case 2 -> cardLayout.show(mainCardContainer, "CHECKOUT");
+            case 3 -> cardLayout.show(mainCardContainer, "PATRON");
+            case 4 -> cardLayout.show(mainCardContainer, "MASTER");
+            case 5 -> cardLayout.show(mainCardContainer, "HOLD");
+            case 6 -> cardLayout.show(mainCardContainer, "NOTIFY");
+            case 7 -> cardLayout.show(mainCardContainer, "HISTORY");
+            case 8 -> cardLayout.show(mainCardContainer, "CHAT");
+        }
+    }
+
+    private JButton createIconButton(String tooltip, Icon icon) {
+        JButton btn = new JButton();
+        if (icon != null) btn.setIcon(icon);
+        btn.setToolTipText(tooltip);
+        btn.setFocusPainted(false);
+        btn.setContentAreaFilled(false);
+        btn.setBorderPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setPreferredSize(new Dimension(36, 36));
+        return btn;
     }
 }
+

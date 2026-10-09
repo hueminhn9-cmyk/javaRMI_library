@@ -2,7 +2,7 @@ package common.rmi;
 
 public class Config {
 
-    public static String IP_SERVER = "10.60.97.68";
+    public static String IP_SERVER = "localhost";
     public static Integer PORT_SERVER = 1235;
 
 //    public static String IP_SERVER_2 = "localhost";

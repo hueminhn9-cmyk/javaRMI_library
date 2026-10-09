@@ -44,18 +44,36 @@ public class SearchPagePanel extends JPanel {
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout());
-        setBackground(UIStyleHelper.COLOR_BG_LIGHT);
-        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        setLayout(new BorderLayout(0, 15));
+        setBackground(UIStyleHelper.COLOR_BG_MAIN);
+        setBorder(BorderFactory.createEmptyBorder(15, 20, 20, 20));
+
+        // Top Notice Banner
+        JPanel noticeBanner = UIStyleHelper.createNoticeBanner(
+                "Chọn cuốn sách bạn muốn mượn trong danh sách bên dưới và click nút <b>Mượn sách</b> để tạo phiếu mượn trực tuyến."
+        );
+        add(noticeBanner, BorderLayout.NORTH);
 
         // Left Panel: Search & Table Card
-        JPanel leftCard = UIStyleHelper.createCardPanel("Danh Sách Sách Trong Thư Viện");
+        JPanel leftCard = new JPanel(new BorderLayout());
+        leftCard.setBackground(Color.WHITE);
+        leftCard.setBorder(BorderFactory.createLineBorder(UIStyleHelper.COLOR_BORDER, 1, true));
+
+        // Section Banner Teal
+        JPanel leftSectionHeader = UIStyleHelper.createSectionHeaderBar(
+                "Danh sách sách khả dụng trong thư viện", UIStyleHelper.COLOR_TEAL_HEADER
+        );
+        leftCard.add(leftSectionHeader, BorderLayout.NORTH);
+
+        JPanel leftContentPanel = new JPanel(new BorderLayout());
+        leftContentPanel.setOpaque(false);
+        leftContentPanel.setBorder(BorderFactory.createEmptyBorder(12, 15, 15, 15));
 
         JPanel searchBarPanel = new JPanel(new BorderLayout(8, 0));
         searchBarPanel.setOpaque(false);
         searchBarPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 12, 0));
 
-        JLabel lblSearch = new JLabel("Tìm kiếm:");
+        JLabel lblSearch = new JLabel("Tìm kiếm sách:");
         ImageIcon searchIcon = UIStyleHelper.getIcon("/images/search.png", 16, 16);
         if (searchIcon != null) lblSearch.setIcon(searchIcon);
         lblSearch.setFont(UIStyleHelper.FONT_BODY_BOLD);
@@ -77,17 +95,27 @@ public class SearchPagePanel extends JPanel {
         sp_Book = new JScrollPane(tbl_Book);
         UIStyleHelper.styleTable(tbl_Book, sp_Book);
 
-        leftCard.add(searchBarPanel, BorderLayout.NORTH);
-        leftCard.add(sp_Book, BorderLayout.CENTER);
+        leftContentPanel.add(searchBarPanel, BorderLayout.NORTH);
+        leftContentPanel.add(sp_Book, BorderLayout.CENTER);
+
+        leftCard.add(leftContentPanel, BorderLayout.CENTER);
 
         // Right Panel: Book Detail Card
-        JPanel rightCard = UIStyleHelper.createCardPanel("Chi Tiết Sách");
+        JPanel rightCard = new JPanel(new BorderLayout());
+        rightCard.setBackground(Color.WHITE);
+        rightCard.setBorder(BorderFactory.createLineBorder(UIStyleHelper.COLOR_BORDER, 1, true));
         rightCard.setPreferredSize(new Dimension(380, 0));
+
+        // Section Banner Orange
+        JPanel rightSectionHeader = UIStyleHelper.createSectionHeaderBar(
+                "Thông tin chi tiết tài liệu", UIStyleHelper.COLOR_ORANGE_HEADER
+        );
+        rightCard.add(rightSectionHeader, BorderLayout.NORTH);
 
         JPanel detailContainer = new JPanel();
         detailContainer.setLayout(new BoxLayout(detailContainer, BoxLayout.Y_AXIS));
         detailContainer.setOpaque(false);
-        detailContainer.setBorder(BorderFactory.createEmptyBorder(10, 5, 10, 5));
+        detailContainer.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         detailContainer.add(createDetailRow("Tên sách:", lb_Search_BookName = new JLabel("-")));
         detailContainer.add(Box.createVerticalStrut(15));
@@ -100,22 +128,19 @@ public class SearchPagePanel extends JPanel {
         detailContainer.add(createDetailRow("Năm xuất bản:", lb_Search_Year = new JLabel("-")));
         detailContainer.add(Box.createVerticalStrut(25));
 
-        btn_Borrow = new JButton("Mượn sách");
-        ImageIcon borrowIcon = UIStyleHelper.getIcon("/images/checked.png", 16, 16);
-        if (borrowIcon != null) btn_Borrow.setIcon(borrowIcon);
-        UIStyleHelper.styleButton(btn_Borrow, UIStyleHelper.COLOR_PRIMARY_BG, UIStyleHelper.COLOR_PRIMARY_BORDER, Color.BLACK);
+        btn_Borrow = UIStyleHelper.createTealPillButton("Mượn sách ngay", UIStyleHelper.getIcon("/images/checked.png", 16, 16));
         btn_Borrow.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btn_Borrow.setMaximumSize(new Dimension(220, 40));
+        btn_Borrow.setMaximumSize(new Dimension(220, 42));
         btn_Borrow.addActionListener(e -> btn_BorrowActionPerformed(e));
         detailContainer.add(btn_Borrow);
 
-        rightCard.add(detailContainer, BorderLayout.NORTH);
+        rightCard.add(detailContainer, BorderLayout.CENTER);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftCard, rightCard);
         splitPane.setResizeWeight(0.65);
         splitPane.setDividerSize(8);
         splitPane.setBorder(null);
-        splitPane.setBackground(UIStyleHelper.COLOR_BG_LIGHT);
+        splitPane.setBackground(UIStyleHelper.COLOR_BG_MAIN);
 
         add(splitPane, BorderLayout.CENTER);
     }
@@ -123,7 +148,7 @@ public class SearchPagePanel extends JPanel {
     private JPanel createDetailRow(String labelText, JLabel valueLabel) {
         JPanel row = new JPanel(new BorderLayout(10, 0));
         row.setOpaque(false);
-        
+
         JLabel lbl = new JLabel(labelText);
         lbl.setFont(UIStyleHelper.FONT_BODY_BOLD);
         lbl.setForeground(UIStyleHelper.COLOR_TEXT_MUTED);
@@ -231,3 +256,4 @@ public class SearchPagePanel extends JPanel {
         }
     }
 }
+

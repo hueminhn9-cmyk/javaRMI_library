@@ -418,9 +418,11 @@ public class BookCopyManagePanel extends JPanel {
 
     private JButton createPrimaryButton(String text, Color bg) {
         JButton btn = new JButton(text);
+        btn.setUI(new javax.swing.plaf.basic.BasicButtonUI());
+        btn.setOpaque(true);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btn.setBackground(bg);
-        btn.setForeground(Color.BLACK);
+        btn.setForeground(Color.WHITE); // High-contrast crisp white text
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.setPreferredSize(new Dimension(120, 36));
@@ -429,9 +431,11 @@ public class BookCopyManagePanel extends JPanel {
 
     private JButton createSecondaryButton(String text) {
         JButton btn = new JButton(text);
-        btn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        btn.setBackground(BG_CARD);
-        btn.setForeground(Color.BLACK);
+        btn.setUI(new javax.swing.plaf.basic.BasicButtonUI());
+        btn.setOpaque(true);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btn.setBackground(new Color(239, 246, 255));
+        btn.setForeground(new Color(30, 58, 138)); // High-contrast dark blue text
         btn.setBorder(new LineBorder(COLOR_BORDER, 1, true));
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -441,9 +445,11 @@ public class BookCopyManagePanel extends JPanel {
 
     private JButton createDangerButton(String text) {
         JButton btn = new JButton(text);
-        btn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btn.setUI(new javax.swing.plaf.basic.BasicButtonUI());
+        btn.setOpaque(true);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btn.setBackground(COLOR_DANGER_BG);
-        btn.setForeground(Color.BLACK);
+        btn.setForeground(COLOR_DANGER_TEXT);
         btn.setBorder(new LineBorder(new Color(252, 165, 165), 1, true));
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -455,7 +461,7 @@ public class BookCopyManagePanel extends JPanel {
         JButton btn = new JButton(text);
         btn.setFont(new Font("Segoe UI", active ? Font.BOLD : Font.PLAIN, 12));
         btn.setBackground(active ? COLOR_PRIMARY : BG_CARD);
-        btn.setForeground(Color.BLACK);
+        btn.setForeground(active ? Color.WHITE : COLOR_TEXT_DARK);
         btn.setBorder(new LineBorder(active ? COLOR_PRIMARY : COLOR_BORDER, 1, true));
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
